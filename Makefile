@@ -1,4 +1,4 @@
-.PHONY: up down build logs restart db-shell app-shell clean
+.PHONY: up down build logs restart db-shell app-shell clean db-generate db-migrate db-push db-seed
 
 up:
 	docker compose up -d
@@ -23,3 +23,15 @@ app-shell:
 
 clean:
 	docker compose down -v
+
+db-generate:
+	docker compose exec app npm run db:generate
+
+db-migrate:
+	docker compose exec app npm run db:migrate
+
+db-push:
+	docker compose exec app npm run db:push
+
+db-seed:
+	docker compose exec app npm run db:seed
