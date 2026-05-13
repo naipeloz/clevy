@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
+import { hashPassword } from "@/lib/auth";
 
 const connectionString =
   process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL!;
@@ -24,6 +25,7 @@ async function seed() {
   await db.insert(schema.users).values({
     email: "admin@acme.com",
     name: "Admin User",
+    passwordHash: await hashPassword("admin1234"),
     role: "admin",
     companyId: company.id,
   });

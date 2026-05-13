@@ -13,7 +13,12 @@ import { relations } from "drizzle-orm";
 
 // ---------- Enums ----------
 
-export const roleEnum = pgEnum("role", ["admin", "recruiter", "hiring_manager"]);
+export const roleEnum = pgEnum("role", [
+  "admin",
+  "recruiter",
+  "hiring_manager",
+  "candidate",
+]);
 
 export const jobStatusEnum = pgEnum("job_status", [
   "draft",
@@ -53,26 +58,48 @@ export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   name: varchar("name", { length: 255 }).notNull(),
+  passwordHash: text("password_hash").notNull(),
   role: roleEnum("role").notNull().default("recruiter"),
   companyId: uuid("company_id").references(() => companies.id),
+  culturalProfile: jsonb("cultural_profile"),
   ...timestamps,
 });
 
 export const companies = pgTable("companies", {
   id: uuid("id").primaryKey().defaultRandom(),
+  slug: varchar("slug", { length: 100 }).unique(),
   name: varchar("name", { length: 255 }).notNull(),
   domain: varchar("domain", { length: 255 }),
   logoUrl: text("logo_url"),
+  tagline: varchar("tagline", { length: 255 }),
+  industry: varchar("industry", { length: 100 }),
+  location: varchar("location", { length: 255 }),
+  culturalHighlights: jsonb("cultural_highlights"),
+  openRoles: jsonb("open_roles"),
   ...timestamps,
 });
 
+export const candidateStatusEnum = pgEnum("candidate_status", [
+  "new",
+  "reviewed",
+  "contacted",
+]);
+
 export const candidates = pgTable("candidates", {
   id: uuid("id").primaryKey().defaultRandom(),
+  slug: varchar("slug", { length: 100 }).unique(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   name: varchar("name", { length: 255 }).notNull(),
   phone: varchar("phone", { length: 50 }),
   linkedinUrl: text("linkedin_url"),
   summary: text("summary"),
+  role: varchar("role", { length: 255 }),
+  location: varchar("location", { length: 255 }),
+  highlights: jsonb("highlights"),
+  signals: jsonb("signals"),
+  frictions: jsonb("frictions"),
+  agentNote: text("agent_note"),
+  status: candidateStatusEnum("status").notNull().default("new"),
   ...timestamps,
 });
 

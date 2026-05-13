@@ -6,16 +6,21 @@ const SECRET = new TextEncoder().encode(process.env.SESSION_SECRET);
 
 type SessionPayload = {
   userId: string;
-  role: "admin" | "recruiter" | "hiring_manager";
+  role: "admin" | "recruiter" | "hiring_manager" | "candidate";
 };
 
 const ROLE_ROUTES: Record<string, SessionPayload["role"][]> = {
   "/empresa": ["recruiter", "hiring_manager", "admin"],
-  "/candidato": ["recruiter", "admin"],
+  "/candidato": ["candidate", "recruiter", "admin"],
   "/agente": ["admin"],
 };
 
-const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/api/auth",
+];
 
 async function getSession(
   request: NextRequest

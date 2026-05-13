@@ -8,6 +8,27 @@
       "when": 1776288170192,
       "tag": "0000_peaceful_proteus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778615437906,
+      "tag": "0001_add_password_hash_and_candidate_role",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778617090376,
+      "tag": "0002_add_cultural_profile",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778617664761,
+      "tag": "0003_extend_companies_and_candidates",
+      "breakpoints": true
     }
   ]
 }
