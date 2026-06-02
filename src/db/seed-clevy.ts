@@ -1,7 +1,65 @@
+import { randomBytes, scrypt as scryptCb } from "node:crypto";
+import { promisify } from "node:util";
 import { drizzle } from "drizzle-orm/postgres-js";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import postgres from "postgres";
 import * as schema from "./schema";
+
+const scrypt = promisify(scryptCb) as (
+  password: string,
+  salt: Buffer,
+  keylen: number
+) => Promise<Buffer>;
+
+// Mirrors hashPassword() in src/lib/auth.ts without importing it
+// (auth.ts pulls next/headers, which isn't available in this script).
+async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16);
+  const derived = await scrypt(password, salt, 64);
+  return `scrypt$${salt.toString("hex")}$${derived.toString("hex")}`;
+}
+
+const DEMO_MANAGER_EMAIL = "manager@linea.demo";
+const DEMO_MANAGER_PASSWORD = "password123";
+
+const DEMO_CULTURE_META = {
+  selected: ["autonomy", "experiment", "collab", "focus", "direct"],
+  priorities: {
+    autonomy: 85,
+    experiment: 70,
+    collab: 75,
+    focus: 60,
+    direct: 55,
+  },
+};
+
+const DEMO_JOBS: {
+  title: string;
+  description: string;
+  location: string;
+  remote: boolean;
+  status: "draft" | "open" | "paused" | "closed";
+  applicants: string[]; // candidate slugs
+}[] = [
+  {
+    title: "Senior Product Designer",
+    description:
+      "Liderás el diseño de producto de extremo a extremo, con autonomía alta y mentoría cercana. Trabajamos horizontal, con experimentación constante y viernes sin reuniones.",
+    location: "Remoto · LatAm",
+    remote: true,
+    status: "open",
+    applicants: ["ana", "daniel", "marina", "rafael"],
+  },
+  {
+    title: "UX Researcher Sr",
+    description:
+      "Diseñás y conducís research que alimenta decisiones de producto. Buscamos rigor, foco profundo y colaboración con diseño e ingeniería.",
+    location: "Remoto · LatAm",
+    remote: true,
+    status: "open",
+    applicants: ["lucia", "tomas"],
+  },
+];
 
 const connectionString =
   process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL!;
@@ -397,10 +455,113 @@ async function hasCandidateCulture(candidateId: string) {
   return Boolean(row);
 }
 
+async function seedManagerPipeline(lineaId: string) {
+  // Representative culture metadata so the culture editor prefills.
+  await db
+    .update(schema.orgCulture)
+    .set({ workStyle: DEMO_CULTURE_META })
+    .where(eq(schema.orgCulture.companyId, lineaId));
+
+  // Demo HR manager linked to Línea Studio.
+  let managerId: string;
+  const [existingManager] = await db
+    .select({ id: schema.users.id })
+    .from(schema.users)
+    .where(eq(schema.users.email, DEMO_MANAGER_EMAIL))
+    .limit(1);
+  if (existingManager) {
+    managerId = existingManager.id;
+    await db
+      .update(schema.users)
+      .set({ companyId: lineaId, role: "hiring_manager" })
+      .where(eq(schema.users.id, managerId));
+  } else {
+    const passwordHash = await hashPassword(DEMO_MANAGER_PASSWORD);
+    const [created] = await db
+      .insert(schema.users)
+      .values({
+        email: DEMO_MANAGER_EMAIL,
+        name: "Ana — HR Manager",
+        passwordHash,
+        role: "hiring_manager",
+        companyId: lineaId,
+      })
+      .returning({ id: schema.users.id });
+    managerId = created.id;
+  }
+
+  // Jobs + applicants (matches). Idempotent on (companyId, title) / (jobId, candidateId).
+  for (const dj of DEMO_JOBS) {
+    let jobId: string;
+    const [existingJob] = await db
+      .select({ id: schema.jobs.id })
+      .from(schema.jobs)
+      .where(
+        and(
+          eq(schema.jobs.companyId, lineaId),
+          eq(schema.jobs.title, dj.title)
+        )
+      )
+      .limit(1);
+    if (existingJob) {
+      jobId = existingJob.id;
+      await db
+        .update(schema.jobs)
+        .set({ status: dj.status, location: dj.location, remote: dj.remote })
+        .where(eq(schema.jobs.id, jobId));
+    } else {
+      const [created] = await db
+        .insert(schema.jobs)
+        .values({
+          companyId: lineaId,
+          createdById: managerId,
+          title: dj.title,
+          description: dj.description,
+          location: dj.location,
+          remote: dj.remote,
+          status: dj.status,
+        })
+        .returning({ id: schema.jobs.id });
+      jobId = created.id;
+    }
+
+    for (const slug of dj.applicants) {
+      const [cand] = await db
+        .select({ id: schema.candidates.id })
+        .from(schema.candidates)
+        .where(eq(schema.candidates.slug, slug))
+        .limit(1);
+      if (!cand) continue;
+      const [existingMatch] = await db
+        .select({ id: schema.matches.id })
+        .from(schema.matches)
+        .where(
+          and(
+            eq(schema.matches.jobId, jobId),
+            eq(schema.matches.candidateId, cand.id)
+          )
+        )
+        .limit(1);
+      if (!existingMatch) {
+        await db
+          .insert(schema.matches)
+          .values({ jobId, candidateId: cand.id, status: "pending" });
+      }
+    }
+  }
+}
+
 async function main() {
   console.log("Seeding Clevy demo data…");
   for (const c of COMPANIES) await upsertCompany(c);
   for (const c of CANDIDATES) await upsertCandidate(c);
+
+  const [linea] = await db
+    .select({ id: schema.companies.id })
+    .from(schema.companies)
+    .where(eq(schema.companies.slug, "linea"))
+    .limit(1);
+  if (linea) await seedManagerPipeline(linea.id);
   const [{ companyCount }] = await db
     .select({ companyCount: sql<number>`count(*)::int` })
     .from(schema.companies);
@@ -409,6 +570,9 @@ async function main() {
     .from(schema.candidates);
   console.log(
     `Seed complete. companies=${companyCount} candidates=${candidateCount}`
+  );
+  console.log(
+    `Demo HR manager: ${DEMO_MANAGER_EMAIL} / ${DEMO_MANAGER_PASSWORD}`
   );
   await client.end();
 }

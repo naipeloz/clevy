@@ -1,17 +1,11 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import { users } from "@/db/schema";
 import { getCurrentSession } from "@/lib/auth";
 import { AppHeader } from "@/components/app-header";
 import { Avatar, ComparisonBar } from "@/components/ui";
-import {
-  computeMatch,
-  CULTURAL_AXES,
-  isCompanyCulture,
-} from "@/lib/clevy-data";
+import { computeMatch, CULTURAL_AXES } from "@/lib/clevy-data";
 import { getCandidateBySlug } from "@/lib/clevy-db";
+import { getCompanyForUser, getOrgCultureAxes } from "@/lib/company-db";
 
 type Params = Promise<{ id: string }>;
 
@@ -28,22 +22,12 @@ export default async function CompanyCandidateDetailPage({
   if (!session) redirect("/login");
   if (session.role === "candidate") redirect("/candidato");
 
-  const [user] = await db
-    .select({
-      name: users.name,
-      culturalProfile: users.culturalProfile,
-    })
-    .from(users)
-    .where(eq(users.id, session.userId))
-    .limit(1);
+  const company = await getCompanyForUser(session.userId);
+  if (!company) redirect("/empresa/perfil");
+  if (!company.hasCulture) redirect("/empresa/cultura");
 
-  if (!user) redirect("/login");
-  if (!isCompanyCulture(user.culturalProfile)) {
-    redirect("/empresa/cultura");
-  }
-
-  const culture = user.culturalProfile;
-  const match = computeMatch(culture.axes, candidate.values);
+  const companyAxes = await getOrgCultureAxes(company.id);
+  const match = computeMatch(companyAxes, candidate.values);
 
   return (
     <div
@@ -54,7 +38,7 @@ export default async function CompanyCandidateDetailPage({
         background: "var(--bg)",
       }}
     >
-      <AppHeader userName={user.name ?? ""} />
+      <AppHeader userName={company.name} />
       <main
         style={{
           flex: 1,
@@ -344,7 +328,7 @@ export default async function CompanyCandidateDetailPage({
             <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
               {CULTURAL_AXES.map((axis) => {
                 const candidateValue = candidate.values[axis.id];
-                const companyValue = culture.axes[axis.id];
+                const companyValue = companyAxes[axis.id];
                 return (
                   <div
                     key={axis.id}

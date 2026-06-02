@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import { users } from "@/db/schema";
-import { getCurrentSession } from "@/lib/auth";
+import { getCurrentSession, isManager } from "@/lib/auth";
 import { AppHeader } from "@/components/app-header";
-import { Avatar, Tag } from "@/components/ui";
-import { COMPANY_VALUES_OPTIONS, isCompanyCulture } from "@/lib/clevy-data";
+import { Avatar, ReadOnlyBanner, Tag } from "@/components/ui";
+import { COMPANY_VALUES_OPTIONS } from "@/lib/clevy-data";
 import { listCandidatesScored } from "@/lib/clevy-db";
+import {
+  getCompanyForUser,
+  getCompanyCultureMeta,
+  getOrgCultureAxes,
+} from "@/lib/company-db";
 import { CandidateTabs } from "./candidate-tabs";
 
 type SearchParams = Promise<{ tab?: string }>;
@@ -25,22 +27,21 @@ export default async function CompanyDashboardPage({
   if (!session) redirect("/login");
   if (session.role === "candidate") redirect("/candidato");
 
-  const [user] = await db
-    .select({
-      name: users.name,
-      culturalProfile: users.culturalProfile,
-    })
-    .from(users)
-    .where(eq(users.id, session.userId))
-    .limit(1);
-
-  if (!user) redirect("/login");
-  if (!isCompanyCulture(user.culturalProfile)) {
-    redirect("/empresa/cultura");
+  const manager = isManager(session.role);
+  const company = await getCompanyForUser(session.userId);
+  // /empresa handles the manager onboarding (create company) and the support
+  // "not linked / culture not ready" states — keep those redirects there.
+  if (!company) redirect("/empresa");
+  if (!company.hasCulture) {
+    if (manager) redirect("/empresa/cultura");
+    redirect("/empresa");
   }
 
-  const culture = user.culturalProfile;
-  const scored = await listCandidatesScored(culture.axes);
+  const [companyAxes, cultureMeta] = await Promise.all([
+    getOrgCultureAxes(company.id),
+    getCompanyCultureMeta(company.id),
+  ]);
+  const scored = await listCandidatesScored(companyAxes);
 
   const counts = {
     new: scored.filter((c) => c.status === "new").length,
@@ -52,7 +53,7 @@ export default async function CompanyDashboardPage({
     .filter((c) => c.status === activeTab)
     .sort((a, b) => b.match - a.match);
 
-  const valueLabels = culture.selected
+  const valueLabels = (cultureMeta?.selected ?? [])
     .map((id) => COMPANY_VALUES_OPTIONS.find((v) => v.id === id)?.label)
     .filter((x): x is string => Boolean(x));
 
@@ -70,7 +71,8 @@ export default async function CompanyDashboardPage({
         background: "var(--bg)",
       }}
     >
-      <AppHeader userName={user.name ?? ""} />
+      <AppHeader userName={company.name} />
+      {!manager ? <ReadOnlyBanner /> : null}
       <main
         style={{
           flex: 1,
@@ -105,7 +107,8 @@ export default async function CompanyDashboardPage({
                   marginBottom: 10,
                 }}
               >
-                {user.name} · Product Designer
+                {company.name}
+                {company.industry ? ` · ${company.industry}` : ""}
               </div>
               <h1
                 style={{

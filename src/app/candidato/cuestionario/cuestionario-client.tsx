@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { ClevyMark } from "@/components/brand";
 import { ProgressBar } from "@/components/ui";
 import { QUESTIONS } from "@/lib/clevy-data";
@@ -19,15 +19,12 @@ export function CuestionarioClient() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [draft, setDraft] = useState(50);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const q = QUESTIONS[step];
-
-  useEffect(() => {
-    setDraft(answers[q.id] ?? 50);
-  }, [step, q.id, answers]);
+  // The current answer is the single source of truth — no synced draft state.
+  const value = answers[q.id] ?? 50;
 
   async function commit(answersToSubmit: Record<string, number>) {
     setPending(true);
@@ -61,7 +58,7 @@ export function CuestionarioClient() {
   }
 
   function next() {
-    const updated = { ...answers, [q.id]: draft };
+    const updated = { ...answers, [q.id]: value };
     setAnswers(updated);
     if (step === QUESTIONS.length - 1) commit(updated);
     else setStep(step + 1);
@@ -72,7 +69,7 @@ export function CuestionarioClient() {
     setStep(step - 1);
   }
 
-  const draftLabel = useMemo(() => intensityLabel(draft), [draft]);
+  const draftLabel = intensityLabel(value);
 
   return (
     <div
@@ -190,7 +187,7 @@ export function CuestionarioClient() {
             >
               <div
                 style={{
-                  color: draft < 50 ? "var(--fg)" : "var(--fg-dim)",
+                  color: value < 50 ? "var(--fg)" : "var(--fg-dim)",
                   transition: "color 200ms",
                 }}
               >
@@ -209,7 +206,7 @@ export function CuestionarioClient() {
               </div>
               <div
                 style={{
-                  color: draft >= 50 ? "var(--fg)" : "var(--fg-dim)",
+                  color: value >= 50 ? "var(--fg)" : "var(--fg-dim)",
                   textAlign: "right",
                   transition: "color 200ms",
                 }}
@@ -252,8 +249,10 @@ export function CuestionarioClient() {
                 type="range"
                 min={0}
                 max={100}
-                value={draft}
-                onChange={(e) => setDraft(Number(e.target.value))}
+                value={value}
+                onChange={(e) =>
+                  setAnswers((a) => ({ ...a, [q.id]: Number(e.target.value) }))
+                }
                 style={{
                   position: "absolute",
                   inset: 0,
@@ -268,7 +267,7 @@ export function CuestionarioClient() {
                 aria-hidden
                 style={{
                   position: "absolute",
-                  left: `${draft}%`,
+                  left: `${value}%`,
                   top: "50%",
                   width: 20,
                   height: 20,

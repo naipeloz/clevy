@@ -40,6 +40,12 @@ export const fileTypeEnum = pgEnum("file_type", [
   "other",
 ]);
 
+export const invitationStatusEnum = pgEnum("invitation_status", [
+  "pending",
+  "accepted",
+  "revoked",
+]);
+
 // ---------- Shared columns ----------
 
 const timestamps = {
@@ -193,6 +199,20 @@ export const files = pgTable("files", {
   ...timestamps,
 });
 
+export const invitations = pgTable("invitations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  companyId: uuid("company_id")
+    .notNull()
+    .references(() => companies.id),
+  email: varchar("email", { length: 255 }).notNull(),
+  role: roleEnum("role").notNull().default("recruiter"),
+  token: varchar("token", { length: 64 }).notNull().unique(),
+  status: invitationStatusEnum("status").notNull().default("pending"),
+  invitedById: uuid("invited_by_id").references(() => users.id),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  ...timestamps,
+});
+
 // ---------- Relations ----------
 
 export const usersRelations = relations(users, ({ one }) => ({
@@ -280,5 +300,16 @@ export const filesRelations = relations(files, ({ one }) => ({
   candidate: one(candidates, {
     fields: [files.candidateId],
     references: [candidates.id],
+  }),
+}));
+
+export const invitationsRelations = relations(invitations, ({ one }) => ({
+  company: one(companies, {
+    fields: [invitations.companyId],
+    references: [companies.id],
+  }),
+  invitedBy: one(users, {
+    fields: [invitations.invitedById],
+    references: [users.id],
   }),
 }));

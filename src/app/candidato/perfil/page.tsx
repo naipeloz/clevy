@@ -121,7 +121,7 @@ export default async function PerfilPage() {
                   marginBottom: 12,
                 }}
               >
-                Tu perfil cultural · Recién generado
+                Tu perfil cultural
               </div>
               <h1
                 style={{
@@ -155,25 +155,7 @@ export default async function PerfilPage() {
                   textDecoration: "none",
                 }}
               >
-                Volver a refinar
-              </Link>
-              <Link
-                href="/candidato/matches"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "11px 22px",
-                  background: "var(--accent)",
-                  color: "var(--bg)",
-                  border: "1px solid var(--accent)",
-                  borderRadius: 4,
-                  fontSize: 14,
-                  fontWeight: 500,
-                  textDecoration: "none",
-                }}
-              >
-                Ver mis matches →
+                Editar respuestas
               </Link>
             </div>
           </div>

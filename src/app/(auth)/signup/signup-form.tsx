@@ -12,14 +12,26 @@ import {
 
 type Role = "candidate" | "company";
 
-export function SignupForm({ initialRole }: { initialRole: Role }) {
+export function SignupForm({
+  initialRole,
+  invite = null,
+  inviteEmail = null,
+  inviteIsCandidate = false,
+}: {
+  initialRole: Role;
+  invite?: string | null;
+  inviteEmail?: string | null;
+  inviteIsCandidate?: boolean;
+}) {
   const router = useRouter();
   const [role, setRole] = useState<Role>(initialRole);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(inviteEmail ?? "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  const isInvite = Boolean(invite);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,15 +39,19 @@ export function SignupForm({ initialRole }: { initialRole: Role }) {
     setPending(true);
 
     try {
+      const payload = isInvite
+        ? { email, name, password, invite }
+        : {
+            email,
+            name,
+            password,
+            // "company" self-signup becomes the HR manager (hiring_manager).
+            role: role === "company" ? "hiring_manager" : "candidate",
+          };
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          name,
-          password,
-          role: role === "company" ? "recruiter" : "candidate",
-        }),
+        body: JSON.stringify(payload),
       });
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
@@ -61,8 +77,8 @@ export function SignupForm({ initialRole }: { initialRole: Role }) {
       noValidate
     >
       <ErrorBanner message={error} />
-      <RoleToggle value={role} onChange={setRole} />
-      <Field label={role === "company" ? "Nombre del contacto" : "Tu nombre"}>
+      {!isInvite ? <RoleToggle value={role} onChange={setRole} /> : null}
+      <Field label="Tu nombre">
         {(id) => (
           <TextInput
             id={id}
@@ -72,11 +88,11 @@ export function SignupForm({ initialRole }: { initialRole: Role }) {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={role === "company" ? "Ana de Línea Studio" : "Ana Restrepo"}
+            placeholder="Ana Restrepo"
           />
         )}
       </Field>
-      <Field label="Email">
+      <Field label="Email" hint={isInvite ? "Definido por la invitación." : undefined}>
         {(id) => (
           <TextInput
             id={id}
@@ -84,9 +100,11 @@ export function SignupForm({ initialRole }: { initialRole: Role }) {
             name="email"
             autoComplete="email"
             required
+            readOnly={isInvite}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@correo.com"
+            style={isInvite ? { opacity: 0.7 } : undefined}
           />
         )}
       </Field>
@@ -106,7 +124,13 @@ export function SignupForm({ initialRole }: { initialRole: Role }) {
         )}
       </Field>
       <SubmitButton pending={pending}>
-        {role === "company" ? "Crear cuenta de empresa" : "Crear mi perfil"}
+        {isInvite
+          ? inviteIsCandidate
+            ? "Crear mi perfil"
+            : "Unirme al equipo"
+          : role === "company"
+            ? "Crear cuenta de empresa"
+            : "Crear mi perfil"}
       </SubmitButton>
     </form>
   );

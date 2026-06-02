@@ -1,3 +1,37 @@
+export function ReadOnlyBanner({
+  message = "Modo solo lectura · HR Support. Podés monitorear vacantes y postulaciones, pero no editarlas.",
+}: {
+  message?: string;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "8px 16px",
+        background: "var(--bg-2)",
+        borderBottom: "1px solid var(--hairline)",
+        fontSize: 12,
+        color: "var(--fg-dim)",
+        letterSpacing: "0.01em",
+      }}
+    >
+      <span
+        aria-hidden
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          background: "var(--warm)",
+          flexShrink: 0,
+        }}
+      />
+      {message}
+    </div>
+  );
+}
+
 export function ProgressBar({ value, total }: { value: number; total: number }) {
   return (
     <div

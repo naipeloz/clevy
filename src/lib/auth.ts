@@ -100,3 +100,9 @@ export function homeForRole(role: SessionRole): string {
   if (role === "candidate") return "/candidato";
   return "/empresa";
 }
+
+// HR manager (full control over the company) vs HR support (read-only).
+// hiring_manager = HR manager, recruiter = HR support, admin = superuser.
+export function isManager(role: SessionRole): boolean {
+  return role === "hiring_manager" || role === "admin";
+}

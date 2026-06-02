@@ -1,21 +1,29 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { users } from "@/db/schema";
-import { getCurrentSession } from "@/lib/auth";
-import {
-  COMPANY_VALUES_OPTIONS,
-  valuesToAxes,
-  type CompanyCulture,
-} from "@/lib/clevy-data";
+import { orgCulture, users } from "@/db/schema";
+import { getCurrentSession, isManager } from "@/lib/auth";
+import { COMPANY_VALUES_OPTIONS, valuesToAxes } from "@/lib/clevy-data";
 
-const ALLOWED_ROLES = new Set(["recruiter", "hiring_manager", "admin"]);
 const VALID_VALUE_IDS = new Set(COMPANY_VALUES_OPTIONS.map((v) => v.id));
 
 export async function POST(request: Request) {
   const session = await getCurrentSession();
-  if (!session || !ALLOWED_ROLES.has(session.role)) {
+  if (!session || !isManager(session.role)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  const [user] = await db
+    .select({ companyId: users.companyId })
+    .from(users)
+    .where(eq(users.id, session.userId))
+    .limit(1);
+
+  if (!user?.companyId) {
+    return NextResponse.json(
+      { error: "Primero creá el perfil de la empresa", redirectTo: "/empresa/perfil" },
+      { status: 400 }
+    );
   }
 
   let body: unknown;
@@ -25,22 +33,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const raw = (body ?? {}) as {
-    selected?: unknown;
-    priorities?: unknown;
-  };
+  const raw = (body ?? {}) as { selected?: unknown; priorities?: unknown };
 
   if (!Array.isArray(raw.selected) || raw.selected.length < 3) {
-    return NextResponse.json(
-      { error: "Elegí al menos 3 valores" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Elegí al menos 3 valores" }, { status: 400 });
   }
   if (raw.selected.length > 6) {
-    return NextResponse.json(
-      { error: "Máximo 6 valores" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Máximo 6 valores" }, { status: 400 });
   }
 
   const selected: string[] = [];
@@ -66,12 +65,27 @@ export async function POST(request: Request) {
   }
 
   const axes = valuesToAxes(selected, priorities);
-  const culture: CompanyCulture = { selected, priorities, axes };
 
-  await db
-    .update(users)
-    .set({ culturalProfile: culture })
-    .where(eq(users.id, session.userId));
+  // org_culture.values holds the AxisValues (read by the matching layer);
+  // workStyle keeps the raw {selected, priorities} so the editor can prefill.
+  const [existing] = await db
+    .select({ id: orgCulture.id })
+    .from(orgCulture)
+    .where(eq(orgCulture.companyId, user.companyId))
+    .limit(1);
 
-  return NextResponse.json({ redirectTo: "/empresa/candidatos" });
+  if (existing) {
+    await db
+      .update(orgCulture)
+      .set({ values: axes, workStyle: { selected, priorities } })
+      .where(eq(orgCulture.companyId, user.companyId));
+  } else {
+    await db.insert(orgCulture).values({
+      companyId: user.companyId,
+      values: axes,
+      workStyle: { selected, priorities },
+    });
+  }
+
+  return NextResponse.json({ redirectTo: "/empresa" });
 }
