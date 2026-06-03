@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import { useT } from "@/components/locale-provider";
 
 export function Field({
   label,
@@ -64,6 +65,7 @@ export function RoleToggle({
   value: "candidate" | "company";
   onChange: (v: "candidate" | "company") => void;
 }) {
+  const t = useT();
   return (
     <div
       role="tablist"
@@ -97,7 +99,7 @@ export function RoleToggle({
               fontFamily: "inherit",
             }}
           >
-            {r === "candidate" ? "Soy candidato" : "Soy empresa"}
+            {r === "candidate" ? t.roleToggle.candidate : t.roleToggle.company}
           </button>
         );
       })}
@@ -112,6 +114,7 @@ export function SubmitButton({
   children: React.ReactNode;
   pending?: boolean;
 }) {
+  const t = useT();
   return (
     <button
       type="submit"
@@ -130,7 +133,7 @@ export function SubmitButton({
         fontFamily: "inherit",
       }}
     >
-      {pending ? "Un momento…" : children}
+      {pending ? t.common.oneMoment : children}
     </button>
   );
 }

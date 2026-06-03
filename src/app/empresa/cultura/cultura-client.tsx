@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ClevyMark } from "@/components/brand";
 import { ProgressBar } from "@/components/ui";
+import { useT } from "@/components/locale-provider";
+import { fmt } from "@/lib/fmt";
 import { COMPANY_VALUES_OPTIONS } from "@/lib/clevy-data";
 
 const DEFAULT_SELECTED = ["autonomy", "craft", "experiment", "focus", "direct"];
@@ -16,12 +18,6 @@ const DEFAULT_PRIORITIES: Record<string, number> = {
   direct: 60,
 };
 
-function intensityLabel(v: number) {
-  if (v < 40) return "Presente";
-  if (v < 70) return "Importante";
-  return "Central";
-}
-
 export function CulturaClient({
   userName,
   initialSelected,
@@ -32,6 +28,11 @@ export function CulturaClient({
   initialPriorities: Record<string, number> | null;
 }) {
   const router = useRouter();
+  const t = useT();
+  const intensityLabel = (v: number) =>
+    v < 40 ? t.cultura.present : v < 70 ? t.cultura.important : t.cultura.central;
+  const valueLabel = (id: string) =>
+    (t.values as Record<string, { label: string; desc: string }>)[id];
   const [selected, setSelected] = useState<string[]>(
     initialSelected ?? DEFAULT_SELECTED
   );
@@ -52,7 +53,7 @@ export function CulturaClient({
 
   async function submit() {
     if (selected.length < 3) {
-      setError("Elegí al menos 3 valores");
+      setError(t.cultura.errorMin);
       return;
     }
     setPending(true);
@@ -68,14 +69,14 @@ export function CulturaClient({
         redirectTo?: string;
       };
       if (!res.ok) {
-        setError(data.error ?? "No se pudo guardar la cultura");
+        setError(data.error ?? t.common.networkError);
         setPending(false);
         return;
       }
       router.push(data.redirectTo ?? "/empresa/candidatos");
       router.refresh();
     } catch {
-      setError("Error de red. Intentalo de nuevo.");
+      setError(t.common.networkError);
       setPending(false);
     }
   }
@@ -109,9 +110,9 @@ export function CulturaClient({
               color: "var(--fg-dim)",
             }}
           >
-            <span>Definiendo la cultura · {userName}</span>
+            <span>{t.cultura.defining} · {userName}</span>
             <span style={{ fontVariantNumeric: "tabular-nums" }}>
-              Paso 2 de 3
+              {t.cultura.step2of3}
             </span>
           </div>
           <ProgressBar value={2} total={3} />
@@ -125,7 +126,7 @@ export function CulturaClient({
             textUnderlineOffset: 3,
           }}
         >
-          Salir
+          {t.common.exit}
         </Link>
       </header>
 
@@ -155,7 +156,7 @@ export function CulturaClient({
                 marginBottom: 12,
               }}
             >
-              Valores centrales
+              {t.cultura.coreValues}
             </div>
             <h1
               style={{
@@ -167,9 +168,7 @@ export function CulturaClient({
                 fontWeight: 400,
               }}
             >
-              Elegí hasta 6 valores que
-              <br />
-              definen cómo trabajan.
+              {t.cultura.title}
             </h1>
             <p
               style={{
@@ -180,8 +179,7 @@ export function CulturaClient({
                 lineHeight: 1.55,
               }}
             >
-              No es lo que quisieran ser — es cómo trabajan de verdad hoy.
-              Seleccioná y ajustá la intensidad de cada uno.
+              {t.cultura.subtitle}
             </p>
           </div>
 
@@ -227,7 +225,7 @@ export function CulturaClient({
                         letterSpacing: "-0.01em",
                       }}
                     >
-                      {v.label}
+                      {valueLabel(v.id).label}
                     </div>
                     <span
                       aria-hidden
@@ -254,7 +252,7 @@ export function CulturaClient({
                       lineHeight: 1.4,
                     }}
                   >
-                    {v.desc}
+                    {valueLabel(v.id).desc}
                   </div>
                 </button>
               );
@@ -277,7 +275,7 @@ export function CulturaClient({
                   marginBottom: 20,
                 }}
               >
-                Intensidad · ¿Qué tan central es cada valor?
+                {t.cultura.intensityTitle}
               </div>
               <div
                 style={{
@@ -306,7 +304,7 @@ export function CulturaClient({
                           fontSize: 20,
                         }}
                       >
-                        {v.label}
+                        {valueLabel(v.id).label}
                       </div>
                       <div style={{ position: "relative", padding: "12px 0" }}>
                         <div
@@ -395,7 +393,7 @@ export function CulturaClient({
         }}
       >
         <div style={{ fontSize: 13, color: "var(--fg-dim)" }}>
-          {selected.length} / 6 valores seleccionados
+          {fmt(t.cultura.selectedCount, { n: selected.length })}
         </div>
         <button
           type="button"
@@ -414,7 +412,7 @@ export function CulturaClient({
             fontFamily: "inherit",
           }}
         >
-          {pending ? "Guardando…" : "Generar perfil cultural →"}
+          {pending ? t.cultura.saving : t.cultura.submit}
         </button>
       </div>
     </div>

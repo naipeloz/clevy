@@ -9,6 +9,7 @@ import {
   SubmitButton,
   TextInput,
 } from "../form-controls";
+import { useT } from "@/components/locale-provider";
 
 type Role = "candidate" | "company";
 
@@ -24,6 +25,7 @@ export function SignupForm({
   inviteIsCandidate?: boolean;
 }) {
   const router = useRouter();
+  const t = useT();
   const [role, setRole] = useState<Role>(initialRole);
   const [name, setName] = useState("");
   const [email, setEmail] = useState(inviteEmail ?? "");
@@ -58,13 +60,13 @@ export function SignupForm({
         redirectTo?: string;
       };
       if (!res.ok) {
-        setError(data.error ?? "No se pudo crear la cuenta");
+        setError(data.error ?? t.auth.signup.error);
         return;
       }
       router.push(data.redirectTo ?? "/");
       router.refresh();
     } catch {
-      setError("Error de red. Intentalo de nuevo.");
+      setError(t.common.networkError);
     } finally {
       setPending(false);
     }
@@ -78,7 +80,7 @@ export function SignupForm({
     >
       <ErrorBanner message={error} />
       {!isInvite ? <RoleToggle value={role} onChange={setRole} /> : null}
-      <Field label="Tu nombre">
+      <Field label={t.auth.yourName}>
         {(id) => (
           <TextInput
             id={id}
@@ -92,7 +94,7 @@ export function SignupForm({
           />
         )}
       </Field>
-      <Field label="Email" hint={isInvite ? "Definido por la invitación." : undefined}>
+      <Field label={t.auth.fieldEmail} hint={isInvite ? t.auth.emailFromInvite : undefined}>
         {(id) => (
           <TextInput
             id={id}
@@ -108,7 +110,7 @@ export function SignupForm({
           />
         )}
       </Field>
-      <Field label="Contraseña" hint="Mínimo 8 caracteres.">
+      <Field label={t.auth.fieldPassword} hint={t.auth.passwordHint}>
         {(id) => (
           <TextInput
             id={id}
@@ -126,11 +128,11 @@ export function SignupForm({
       <SubmitButton pending={pending}>
         {isInvite
           ? inviteIsCandidate
-            ? "Crear mi perfil"
-            : "Unirme al equipo"
+            ? t.auth.signup.submitCandidate
+            : t.auth.signup.submitJoin
           : role === "company"
-            ? "Crear cuenta de empresa"
-            : "Crear mi perfil"}
+            ? t.auth.signup.submitCompany
+            : t.auth.signup.submitCandidate}
       </SubmitButton>
     </form>
   );

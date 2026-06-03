@@ -2,9 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useT } from "@/components/locale-provider";
 
 export function LogoutButton() {
   const router = useRouter();
+  const t = useT();
   const [pending, setPending] = useState(false);
 
   async function onClick() {
@@ -33,7 +35,7 @@ export function LogoutButton() {
         fontFamily: "inherit",
       }}
     >
-      {pending ? "Saliendo…" : "Cerrar sesión"}
+      {pending ? t.nav.loggingOut : t.nav.logout}
     </button>
   );
 }

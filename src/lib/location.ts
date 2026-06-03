@@ -35,16 +35,20 @@ export function formatLocation(
 export function formatSalary(
   min: number | null | undefined,
   max: number | null | undefined,
-  currency: string | null | undefined
+  currency: string | null | undefined,
+  locale = "es"
 ): string | null {
   if (min == null && max == null) return null;
   const cur = currency || "USD";
-  const fmt = (n: number) => n.toLocaleString("es-UY");
+  const numLocale = locale === "en" ? "en-US" : "es-UY";
+  const fmt = (n: number) => n.toLocaleString(numLocale);
+  const fromWord = locale === "en" ? "from" : "desde";
+  const toWord = locale === "en" ? "up to" : "hasta";
   const range =
     min != null && max != null
       ? `${fmt(min)} – ${fmt(max)}`
       : min != null
-        ? `desde ${fmt(min)}`
-        : `hasta ${fmt(max as number)}`;
+        ? `${fromWord} ${fmt(min)}`
+        : `${toWord} ${fmt(max as number)}`;
   return `${cur} ${range}`;
 }

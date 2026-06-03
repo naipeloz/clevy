@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentSession, isManager } from "@/lib/auth";
+import { getDict } from "@/lib/i18n";
 import { AppHeader } from "@/components/app-header";
 import { ReadOnlyBanner } from "@/components/ui";
 import {
@@ -17,6 +18,7 @@ export default async function EquipoPage() {
   // view (only candidate invitations).
   const manager = isManager(session.role);
 
+  const t = await getDict();
   const company = await getCompanyForUser(session.userId);
   if (!company) redirect("/empresa");
 
@@ -49,7 +51,7 @@ export default async function EquipoPage() {
       }}
     >
       <AppHeader userName={company.name} />
-      {!manager ? <ReadOnlyBanner message="Modo HR Support · podés invitar candidatos a completar su formulario." /> : null}
+      {!manager ? <ReadOnlyBanner message={t.ui.readOnlySupportInvite} /> : null}
       <EquipoClient
         manager={manager}
         members={members.map((m) => ({

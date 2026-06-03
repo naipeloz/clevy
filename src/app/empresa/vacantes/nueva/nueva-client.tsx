@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ClevyMark } from "@/components/brand";
 import { LocationPicker } from "@/components/location-picker";
+import { useT } from "@/components/locale-provider";
 import { SUPPORTED_CURRENCIES } from "@/lib/location";
 import {
   ErrorBanner,
@@ -15,6 +16,7 @@ import {
 
 export function NuevaVacanteClient({ companyName }: { companyName: string }) {
   const router = useRouter();
+  const t = useT();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [countryCode, setCountryCode] = useState<string | null>(null);
@@ -52,14 +54,14 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
         redirectTo?: string;
       };
       if (!res.ok) {
-        setError(data.error ?? "No se pudo crear la vacante");
+        setError(data.error ?? t.vacante.error);
         setPending(false);
         return;
       }
       router.push(data.redirectTo ?? "/empresa");
       router.refresh();
     } catch {
-      setError("Error de red. Intentalo de nuevo.");
+      setError(t.common.networkError);
       setPending(false);
     }
   }
@@ -86,7 +88,7 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <ClevyMark size={24} />
           <span style={{ fontSize: 13, color: "var(--fg-dim)" }}>
-            Nueva vacante · {companyName}
+            {t.vacante.newHeader} · {companyName}
           </span>
         </div>
         <Link
@@ -98,7 +100,7 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
             textUnderlineOffset: 3,
           }}
         >
-          Salir
+          {t.common.exit}
         </Link>
       </header>
 
@@ -114,7 +116,7 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
               fontWeight: 400,
             }}
           >
-            Publicá una vacante.
+            {t.vacante.postTitle}
           </h1>
 
           <form
@@ -123,7 +125,7 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
             noValidate
           >
             <ErrorBanner message={error} />
-            <Field label="Título">
+            <Field label={t.vacante.titleLabel}>
               {(id) => (
                 <TextInput
                   id={id}
@@ -134,14 +136,14 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
                 />
               )}
             </Field>
-            <Field label="Descripción" hint="Opcional.">
+            <Field label={t.vacante.descLabel} hint={t.common.optional}>
               {(id) => (
                 <textarea
                   id={id}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={5}
-                  placeholder="Qué van a hacer, qué buscan, cómo trabajan…"
+                  placeholder={t.vacante.descPlaceholder}
                   style={{
                     padding: "10px 14px",
                     background: "var(--bg)",
@@ -179,10 +181,10 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
                 checked={remote}
                 onChange={(e) => setRemote(e.target.checked)}
               />
-              Trabajo remoto
+              {t.vacante.remoteLabel}
             </label>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-              <Field label="Moneda">
+              <Field label={t.vacante.currencyLabel}>
                 {(id) => (
                   <select
                     id={id}
@@ -203,13 +205,13 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
                   >
                     {SUPPORTED_CURRENCIES.map((c) => (
                       <option key={c} value={c}>
-                        {c === "USD" ? "USD (dólares)" : "UYU (pesos uruguayos)"}
+                        {c === "USD" ? t.vacante.currencyUsd : t.vacante.currencyUyu}
                       </option>
                     ))}
                   </select>
                 )}
               </Field>
-              <Field label="Salario mín. (opcional)">
+              <Field label={t.vacante.salaryMinLabel}>
                 {(id) => (
                   <TextInput
                     id={id}
@@ -220,7 +222,7 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
                   />
                 )}
               </Field>
-              <Field label="Salario máx. (opcional)">
+              <Field label={t.vacante.salaryMaxLabel}>
                 {(id) => (
                   <TextInput
                     id={id}
@@ -247,9 +249,9 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
                 checked={publish}
                 onChange={(e) => setPublish(e.target.checked)}
               />
-              Publicar de inmediato (si no, queda como borrador)
+              {t.vacante.publishLabel}
             </label>
-            <SubmitButton pending={pending}>Crear vacante</SubmitButton>
+            <SubmitButton pending={pending}>{t.vacante.submit}</SubmitButton>
           </form>
         </div>
       </main>

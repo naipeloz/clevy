@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { BrandLockup } from "@/components/brand";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { getDict } from "@/lib/i18n";
 
-export function AuthShell({
+export async function AuthShell({
   eyebrow,
   title,
   subtitle,
@@ -14,6 +16,7 @@ export function AuthShell({
   children: React.ReactNode;
   footer: React.ReactNode;
 }) {
+  const t = await getDict();
   return (
     <div
       style={{
@@ -31,9 +34,18 @@ export function AuthShell({
           borderRight: "1px solid var(--hairline)",
         }}
       >
-        <Link href="/" style={{ textDecoration: "none" }}>
-          <BrandLockup />
-        </Link>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Link href="/" style={{ textDecoration: "none" }}>
+            <BrandLockup />
+          </Link>
+          <LanguageSwitcher />
+        </div>
         <div
           style={{
             flex: 1,
@@ -105,7 +117,7 @@ export function AuthShell({
             color: "var(--fg-dim)",
           }}
         >
-          Cultura como criterio de match
+          {t.shell.eyebrow}
         </div>
         <blockquote
           style={{
@@ -116,8 +128,9 @@ export function AuthShell({
             letterSpacing: "-0.02em",
           }}
         >
-          Trabajar donde{" "}
-          <em style={{ color: "var(--accent)" }}>de verdad</em> encajas.
+          {t.shell.quotePre}
+          <em style={{ color: "var(--accent)" }}>{t.shell.quoteEm}</em>
+          {t.shell.quotePost}
         </blockquote>
         <div
           style={{
@@ -136,15 +149,15 @@ export function AuthShell({
             >
               7
             </strong>{" "}
-            min en completar tu perfil
+            {t.shell.stat1}
           </div>
           <div>
             <strong
               style={{ color: "var(--fg)", fontVariantNumeric: "tabular-nums" }}
             >
-              12
+              7
             </strong>{" "}
-            dimensiones culturales medidas
+            {t.shell.stat2}
           </div>
           <div>
             <strong
@@ -152,7 +165,7 @@ export function AuthShell({
             >
               2
             </strong>{" "}
-            formas de completarlo — cuestionario o agente IA
+            {t.shell.stat3}
           </div>
         </div>
       </aside>

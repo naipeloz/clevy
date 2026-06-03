@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLocale, useT } from "@/components/locale-provider";
 
 type Country = { code: string; name: string };
 
@@ -28,15 +29,15 @@ export function LocationPicker({
   countryCode,
   city,
   onChange,
-  countryLabel = "País",
-  cityLabel = "Ciudad",
 }: {
   countryCode: string | null;
   city: string | null;
   onChange: (next: { countryCode: string | null; city: string | null }) => void;
-  countryLabel?: string;
-  cityLabel?: string;
 }) {
+  const t = useT();
+  const locale = useLocale();
+  const countryLabel = t.location.country;
+  const cityLabel = t.location.city;
   const [countries, setCountries] = useState<Country[]>([]);
   const [cityQuery, setCityQuery] = useState(city ?? "");
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -46,7 +47,7 @@ export function LocationPicker({
   // Load the country list once.
   useEffect(() => {
     let active = true;
-    fetch("/api/locations/countries")
+    fetch(`/api/locations/countries?locale=${locale}`)
       .then((r) => r.json())
       .then((d) => {
         if (active) setCountries(d.countries ?? []);
@@ -55,7 +56,7 @@ export function LocationPicker({
     return () => {
       active = false;
     };
-  }, []);
+  }, [locale]);
 
   // Debounced city lookup for the selected country. (Suggestions are cleared
   // in selectCountry when the country changes, so no sync setState here.)
@@ -96,7 +97,7 @@ export function LocationPicker({
           onChange={(e) => selectCountry(e.target.value)}
           style={{ ...inputStyle, cursor: "pointer" }}
         >
-          <option value="">Seleccioná un país…</option>
+          <option value="">{t.location.selectCountry}</option>
           {countries.map((c) => (
             <option key={c.code} value={c.code}>
               {c.name}
@@ -113,7 +114,7 @@ export function LocationPicker({
           type="text"
           value={cityQuery}
           disabled={!countryCode}
-          placeholder={countryCode ? "Escribí para buscar…" : "Elegí un país primero"}
+          placeholder={countryCode ? t.location.typeToSearch : t.location.pickCountryFirst}
           onChange={(e) => {
             setCityQuery(e.target.value);
             setOpen(true);

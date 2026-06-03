@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ClevyMark } from "@/components/brand";
 import { ProgressBar } from "@/components/ui";
 import { LocationPicker } from "@/components/location-picker";
+import { useT } from "@/components/locale-provider";
 import {
   ErrorBanner,
   Field,
@@ -24,6 +25,7 @@ type CompanyFields = {
 
 export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
   const router = useRouter();
+  const t = useT();
   const isEdit = initial !== null;
   const [fields, setFields] = useState<CompanyFields>(
     initial ?? {
@@ -57,14 +59,14 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
         redirectTo?: string;
       };
       if (!res.ok) {
-        setError(data.error ?? "No se pudo guardar la empresa");
+        setError(data.error ?? t.perfilCompany.error);
         setPending(false);
         return;
       }
       router.push(data.redirectTo ?? "/empresa");
       router.refresh();
     } catch {
-      setError("Error de red. Intentalo de nuevo.");
+      setError(t.common.networkError);
       setPending(false);
     }
   }
@@ -98,10 +100,10 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
               color: "var(--fg-dim)",
             }}
           >
-            <span>{isEdit ? "Editar empresa" : "Datos de la empresa"}</span>
+            <span>{isEdit ? t.perfilCompany.headerEdit : t.perfilCompany.headerCreate}</span>
             {!isEdit ? (
               <span style={{ fontVariantNumeric: "tabular-nums" }}>
-                Paso 1 de 3
+                {t.perfilCompany.step1of3}
               </span>
             ) : null}
           </div>
@@ -117,7 +119,7 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
               textUnderlineOffset: 3,
             }}
           >
-            Salir
+            {t.common.exit}
           </Link>
         ) : null}
       </header>
@@ -133,7 +135,7 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
               marginBottom: 12,
             }}
           >
-            {isEdit ? "Perfil" : "Empecemos"}
+            {isEdit ? t.perfilCompany.eyebrowEdit : t.perfilCompany.eyebrowCreate}
           </div>
           <h1
             style={{
@@ -145,7 +147,7 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
               fontWeight: 400,
             }}
           >
-            {isEdit ? "Actualizá los datos." : "Contanos sobre tu empresa."}
+            {isEdit ? t.perfilCompany.titleEdit : t.perfilCompany.titleCreate}
           </h1>
 
           <form
@@ -154,7 +156,7 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
             noValidate
           >
             <ErrorBanner message={error} />
-            <Field label="Nombre de la empresa">
+            <Field label={t.perfilCompany.nameLabel}>
               {(id) => (
                 <TextInput
                   id={id}
@@ -165,7 +167,7 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
                 />
               )}
             </Field>
-            <Field label="Tagline" hint="Una línea sobre quiénes son.">
+            <Field label={t.perfilCompany.taglineLabel} hint={t.perfilCompany.taglineHint}>
               {(id) => (
                 <TextInput
                   id={id}
@@ -175,7 +177,7 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
                 />
               )}
             </Field>
-            <Field label="Industria">
+            <Field label={t.perfilCompany.industryLabel}>
               {(id) => (
                 <TextInput
                   id={id}
@@ -196,7 +198,7 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
                 }))
               }
             />
-            <Field label="Dominio" hint="Opcional.">
+            <Field label={t.perfilCompany.domainLabel} hint={t.common.optional}>
               {(id) => (
                 <TextInput
                   id={id}
@@ -207,7 +209,7 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
               )}
             </Field>
             <SubmitButton pending={pending}>
-              {isEdit ? "Guardar cambios" : "Continuar a cultura →"}
+              {isEdit ? t.perfilCompany.submitEdit : t.perfilCompany.submitCreate}
             </SubmitButton>
           </form>
         </div>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentSession, isManager } from "@/lib/auth";
+import { getDict, getLocale } from "@/lib/i18n";
 import { AppHeader } from "@/components/app-header";
 import { Avatar, MatchPill, ReadOnlyBanner, Tag } from "@/components/ui";
 import {
@@ -14,20 +15,6 @@ import { JobStatusControl } from "./status-control";
 
 type Params = Promise<{ id: string }>;
 
-const STATUS_LABEL: Record<string, string> = {
-  draft: "Borrador",
-  open: "Abierta",
-  paused: "Pausada",
-  closed: "Cerrada",
-};
-
-const APPLICANT_STATUS_LABEL: Record<string, string> = {
-  pending: "Nuevo",
-  shortlisted: "Preseleccionado",
-  rejected: "Descartado",
-  hired: "Contratado",
-};
-
 export default async function VacanteDetailPage({
   params,
 }: {
@@ -39,6 +26,8 @@ export default async function VacanteDetailPage({
   if (!session) redirect("/login");
   if (session.role === "candidate") redirect("/candidato");
 
+  const t = await getDict();
+  const locale = await getLocale();
   const company = await getCompanyForUser(session.userId);
   if (!company) redirect("/empresa");
 
@@ -49,12 +38,15 @@ export default async function VacanteDetailPage({
   const companyAxes = await getOrgCultureAxes(company.id);
   const applicants = await listApplicantsForJob(id, companyAxes);
 
-  const salary = formatSalary(job.salaryMin, job.salaryMax, job.currency);
-  const locationLabel = formatLocation({
-    city: job.city,
-    countryCode: job.countryCode,
-    location: job.location,
-  });
+  const salary = formatSalary(job.salaryMin, job.salaryMax, job.currency, locale);
+  const locationLabel = formatLocation(
+    {
+      city: job.city,
+      countryCode: job.countryCode,
+      location: job.location,
+    },
+    locale
+  );
 
   return (
     <div
@@ -66,7 +58,7 @@ export default async function VacanteDetailPage({
       }}
     >
       <AppHeader userName={company.name} />
-      {!manager ? <ReadOnlyBanner /> : null}
+      {!manager ? <ReadOnlyBanner message={t.ui.readOnlyDefault} /> : null}
       <main style={{ flex: 1, padding: "40px 64px 80px", overflow: "auto" }}>
         <div
           style={{
@@ -85,7 +77,7 @@ export default async function VacanteDetailPage({
               textDecoration: "none",
             }}
           >
-            ← Vacantes
+            {t.vacante.backVacancies}
           </Link>
 
           <div
@@ -99,9 +91,9 @@ export default async function VacanteDetailPage({
             <div>
               <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
                 <Tag tone={job.status === "open" ? "accent" : "default"}>
-                  {STATUS_LABEL[job.status] ?? job.status}
+                  {t.statuses[job.status]}
                 </Tag>
-                {job.remote ? <Tag>Remoto</Tag> : null}
+                {job.remote ? <Tag>{t.empresa.remote}</Tag> : null}
               </div>
               <h1
                 style={{
@@ -159,12 +151,12 @@ export default async function VacanteDetailPage({
                 paddingTop: 20,
               }}
             >
-              Postulados · {applicants.length}
+              {t.vacante.applicants} · {applicants.length}
             </div>
 
             {applicants.length === 0 ? (
               <div style={{ fontSize: 14, color: "var(--fg-dim)", padding: "20px 0" }}>
-                Todavía no hay postulados para esta vacante.
+                {t.vacante.noApplicants}
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column" }}>
@@ -198,14 +190,14 @@ export default async function VacanteDetailPage({
                       {a.location || "—"}
                     </div>
                     <div>
-                      <Tag>{APPLICANT_STATUS_LABEL[a.status] ?? a.status}</Tag>
+                      <Tag>{t.applicantStatus[a.status]}</Tag>
                     </div>
                     <div style={{ textAlign: "right" }}>
                       {a.formCompleted && a.match !== null ? (
                         <MatchPill value={a.match} size="sm" />
                       ) : (
                         <span style={{ fontSize: 12, color: "var(--fg-dim)" }}>
-                          Formulario pendiente
+                          {t.vacante.formPending}
                         </span>
                       )}
                     </div>

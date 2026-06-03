@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Avatar, Tag } from "@/components/ui";
+import { useT } from "@/components/locale-provider";
 import {
   ErrorBanner,
   Field,
@@ -35,6 +36,7 @@ export function EquipoClient({
   pending: Pending[];
 }) {
   const router = useRouter();
+  const t = useT();
   const [email, setEmail] = useState("");
   // Support can only invite candidates; managers default to inviting support.
   const [role, setRole] = useState<InviteRole>(
@@ -61,7 +63,7 @@ export function EquipoClient({
         inviteUrl?: string;
       };
       if (!res.ok || !data.inviteUrl) {
-        setError(data.error ?? "No se pudo generar la invitación");
+        setError(data.error ?? t.equipo.error);
         return;
       }
       const token = data.inviteUrl.split("invite=")[1] ?? "";
@@ -69,7 +71,7 @@ export function EquipoClient({
       setEmail("");
       router.refresh();
     } catch {
-      setError("Error de red. Intentalo de nuevo.");
+      setError(t.common.networkError);
     } finally {
       setSubmitting(false);
     }
@@ -106,7 +108,7 @@ export function EquipoClient({
             href="/empresa"
             style={{ fontSize: 13, color: "var(--fg-dim)", textDecoration: "none" }}
           >
-            ← Vacantes
+            {t.equipo.backVacancies}
           </Link>
           <h1
             style={{
@@ -117,7 +119,7 @@ export function EquipoClient({
               fontWeight: 400,
             }}
           >
-            Equipo
+            {t.equipo.title}
           </h1>
           <p
             style={{
@@ -127,9 +129,7 @@ export function EquipoClient({
               lineHeight: 1.55,
             }}
           >
-            {manager
-              ? "Invitá colegas de HR como soporte (solo lectura), o invitá candidatos a completar su perfil cultural."
-              : "Invitá candidatos a completar su perfil cultural."}
+            {manager ? t.equipo.introManager : t.equipo.introSupport}
           </p>
         </div>
 
@@ -144,7 +144,7 @@ export function EquipoClient({
           }}
         >
           {manager ? (
-            <Field label="A quién invitás">
+            <Field label={t.equipo.whoToInvite}>
               {() => (
                 <div
                   role="tablist"
@@ -161,8 +161,8 @@ export function EquipoClient({
                 >
                   {(
                     [
-                      ["recruiter", "HR Support"],
-                      ["candidate", "Candidato"],
+                      ["recruiter", t.equipo.roleSupport],
+                      ["candidate", t.equipo.roleCandidate],
                     ] as const
                   ).map(([value, label]) => {
                     const active = role === value;
@@ -196,7 +196,7 @@ export function EquipoClient({
           <div style={{ display: "flex", gap: 12, alignItems: "flex-end" }}>
             <div style={{ flex: 1 }}>
               <Field
-                label={role === "candidate" ? "Email del candidato" : "Email del colega"}
+                label={role === "candidate" ? t.equipo.emailCandidate : t.equipo.emailColleague}
               >
                 {(id) => (
                   <TextInput
@@ -214,7 +214,7 @@ export function EquipoClient({
                 )}
               </Field>
             </div>
-            <SubmitButton pending={submitting}>Generar invitación</SubmitButton>
+            <SubmitButton pending={submitting}>{t.equipo.submit}</SubmitButton>
           </div>
         </form>
 
@@ -240,7 +240,7 @@ export function EquipoClient({
                 color: "var(--fg-dim)",
               }}
             >
-              Link de invitación — compartilo
+              {t.equipo.inviteLinkLabel}
             </div>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
               <code
@@ -268,7 +268,7 @@ export function EquipoClient({
                   whiteSpace: "nowrap",
                 }}
               >
-                {copied ? "¡Copiado!" : "Copiar"}
+                {copied ? t.equipo.copied : t.equipo.copy}
               </button>
             </div>
           </div>
@@ -285,7 +285,7 @@ export function EquipoClient({
                 marginBottom: 12,
               }}
             >
-              Invitaciones pendientes
+              {t.equipo.pending}
             </div>
             {pending.map((p) => (
               <div
@@ -302,7 +302,7 @@ export function EquipoClient({
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 14 }}>{p.email}</span>
                   <Tag tone={p.role === "candidate" ? "default" : "accent"}>
-                    {p.role === "candidate" ? "Candidato" : "HR Support"}
+                    {p.role === "candidate" ? t.equipo.roleCandidate : t.equipo.tagSupport}
                   </Tag>
                 </div>
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -320,7 +320,7 @@ export function EquipoClient({
                       fontFamily: "inherit",
                     }}
                   >
-                    Copiar link
+                    {t.equipo.copyLink}
                   </button>
                   {manager ? (
                     <button
@@ -335,7 +335,7 @@ export function EquipoClient({
                         fontFamily: "inherit",
                       }}
                     >
-                      Revocar
+                      {t.equipo.revoke}
                     </button>
                   ) : null}
                 </div>
@@ -355,7 +355,7 @@ export function EquipoClient({
                 marginBottom: 12,
               }}
             >
-              Miembros
+              {t.equipo.members}
             </div>
             {members.map((m) => (
               <div
@@ -376,7 +376,7 @@ export function EquipoClient({
                   </div>
                 </div>
                 <Tag tone={m.isManager ? "accent" : "default"}>
-                  {m.isManager ? "HR Manager" : "HR Support"}
+                  {m.isManager ? t.equipo.tagManager : t.equipo.tagSupport}
                 </Tag>
               </div>
             ))}

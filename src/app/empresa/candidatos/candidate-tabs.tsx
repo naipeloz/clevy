@@ -2,19 +2,20 @@ import Link from "next/link";
 
 type TabId = "new" | "reviewed" | "contacted";
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: "new", label: "Nuevas" },
-  { id: "reviewed", label: "Revisadas" },
-  { id: "contacted", label: "Contactadas" },
-];
-
 export function CandidateTabs({
   counts,
   activeTab,
+  labels,
 }: {
   counts: Record<TabId, number>;
   activeTab: TabId;
+  labels: Record<TabId, string>;
 }) {
+  const TABS: { id: TabId; label: string }[] = [
+    { id: "new", label: labels.new },
+    { id: "reviewed", label: labels.reviewed },
+    { id: "contacted", label: labels.contacted },
+  ];
   return (
     <div
       style={{

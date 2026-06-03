@@ -4,60 +4,21 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { getCurrentSession } from "@/lib/auth";
+import { getDict } from "@/lib/i18n";
 import { AppHeader } from "@/components/app-header";
 import { AxisMeter } from "@/components/ui";
-import {
-  CULTURAL_AXES,
-  isCandidateProfile,
-  type AxisId,
-} from "@/lib/clevy-data";
+import { CULTURAL_AXES, isCandidateProfile } from "@/lib/clevy-data";
 
-function describe(axis: AxisId, v: number): string {
-  const labels: Record<AxisId, [string, string, string]> = {
-    pace: [
-      "Necesita ritmo pausado, con tiempo para pensar.",
-      "Ritmo enfocado, no frenético.",
-      "Energizado por la intensidad y la acción.",
-    ],
-    autonomy: [
-      "Le funciona la estructura clara y procesos definidos.",
-      "Busca autonomía con respaldo.",
-      "Quiere decidir el cómo sin pedir permiso.",
-    ],
-    collab: [
-      "Rinde solo, con foco protegido.",
-      "Colaborativa con espacios de foco.",
-      "Mejor versión en colaboración constante.",
-    ],
-    hierarchy: [
-      "Prefiere estructuras horizontales.",
-      "Algo de jerarquía cuando ayuda.",
-      "Le funciona una cadena clara de mando.",
-    ],
-    risk: [
-      "Valora la estabilidad y la predictibilidad.",
-      "Abierto a experimentar con guardrails.",
-      "Quiere probar rápido aunque algo falle.",
-    ],
-    communication: [
-      "Comunicación directa y concisa.",
-      "Directa pero con contexto.",
-      "Contextual y empática por encima de la velocidad.",
-    ],
-    worklife: [
-      "Límites claros entre trabajo y vida.",
-      "Algo de mezcla puntual cuando hace sentido.",
-      "Trabajo y vida personal se mezclan con naturalidad.",
-    ],
-  };
-  const idx = v < 35 ? 0 : v < 65 ? 1 : 2;
-  return labels[axis][idx];
+function describeIndex(v: number): 0 | 1 | 2 {
+  return v < 35 ? 0 : v < 65 ? 1 : 2;
 }
 
 export default async function PerfilPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
   if (session.role !== "candidate") redirect("/empresa");
+
+  const t = await getDict();
 
   const [user] = await db
     .select({
@@ -121,7 +82,7 @@ export default async function PerfilPage() {
                   marginBottom: 12,
                 }}
               >
-                Tu perfil cultural
+                {t.candidato.perfilEyebrow}
               </div>
               <h1
                 style={{
@@ -133,9 +94,7 @@ export default async function PerfilPage() {
                   fontWeight: 400,
                 }}
               >
-                Así trabajás
-                <br />
-                mejor,{" "}
+                {t.candidato.perfilTitlePre}
                 <em style={{ color: "var(--accent)" }}>{firstName}</em>.
               </h1>
             </div>
@@ -155,7 +114,7 @@ export default async function PerfilPage() {
                   textDecoration: "none",
                 }}
               >
-                Editar respuestas
+                {t.candidato.perfilEdit}
               </Link>
             </div>
           </div>
@@ -175,7 +134,7 @@ export default async function PerfilPage() {
                 marginBottom: 24,
               }}
             >
-              7 dimensiones culturales
+              {t.candidato.perfilDimensions}
             </div>
             <div
               style={{
@@ -197,8 +156,8 @@ export default async function PerfilPage() {
                     }}
                   >
                     <AxisMeter
-                      leftLabel={axis.left}
-                      rightLabel={axis.right}
+                      leftLabel={t.axes[axis.id].left}
+                      rightLabel={t.axes[axis.id].right}
                       value={v}
                     />
                     <div
@@ -209,7 +168,7 @@ export default async function PerfilPage() {
                         lineHeight: 1.4,
                       }}
                     >
-                      &ldquo;{describe(axis.id, v)}&rdquo;
+                      &ldquo;{t.describe[axis.id][describeIndex(v)]}&rdquo;
                     </div>
                   </div>
                 );

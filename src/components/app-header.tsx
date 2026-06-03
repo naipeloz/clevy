@@ -1,5 +1,6 @@
 import { BrandLockup } from "@/components/brand";
 import { LogoutButton } from "@/components/logout-button";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export function AppHeader({ userName }: { userName: string }) {
   return (
@@ -14,6 +15,7 @@ export function AppHeader({ userName }: { userName: string }) {
     >
       <BrandLockup />
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <LanguageSwitcher />
         <span style={{ fontSize: 13, color: "var(--fg-dim)" }}>{userName}</span>
         <LogoutButton />
       </div>

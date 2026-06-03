@@ -2,21 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/components/locale-provider";
 
 type Status = "draft" | "open" | "paused" | "closed";
-
-const NEXT_ACTIONS: Record<Status, { label: string; status: Status }[]> = {
-  draft: [{ label: "Publicar", status: "open" }],
-  open: [
-    { label: "Pausar", status: "paused" },
-    { label: "Cerrar", status: "closed" },
-  ],
-  paused: [
-    { label: "Reabrir", status: "open" },
-    { label: "Cerrar", status: "closed" },
-  ],
-  closed: [{ label: "Reabrir", status: "open" }],
-};
 
 export function JobStatusControl({
   jobId,
@@ -26,7 +14,21 @@ export function JobStatusControl({
   status: Status;
 }) {
   const router = useRouter();
+  const t = useT();
   const [pending, setPending] = useState(false);
+
+  const NEXT_ACTIONS: Record<Status, { label: string; status: Status }[]> = {
+    draft: [{ label: t.vacante.statusPublish, status: "open" }],
+    open: [
+      { label: t.vacante.statusPause, status: "paused" },
+      { label: t.vacante.statusClose, status: "closed" },
+    ],
+    paused: [
+      { label: t.vacante.statusReopen, status: "open" },
+      { label: t.vacante.statusClose, status: "closed" },
+    ],
+    closed: [{ label: t.vacante.statusReopen, status: "open" }],
+  };
 
   async function setStatus(next: Status) {
     setPending(true);

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
+import { getDict, getLocale, dictFor } from "@/lib/i18n";
+import { LocaleProvider } from "@/components/locale-provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -15,23 +17,28 @@ const instrumentSerif = Instrument_Serif({
   style: ["normal", "italic"],
 });
 
-export const metadata: Metadata = {
-  title: "Clevy — Cultura como criterio de match",
-  description:
-    "Clevy conecta candidatos con empresas usando la cultura organizacional como criterio de match.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getDict();
+  return { title: t.meta.title, description: t.meta.description };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const dict = dictFor(locale);
   return (
     <html
-      lang="es"
+      lang={locale}
       className={`${inter.variable} ${instrumentSerif.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <LocaleProvider locale={locale} dict={dict}>
+          {children}
+        </LocaleProvider>
+      </body>
     </html>
   );
 }

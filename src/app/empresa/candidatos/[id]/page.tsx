@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getCurrentSession } from "@/lib/auth";
+import { getCurrentSession, isManager } from "@/lib/auth";
+import { getDict } from "@/lib/i18n";
 import { AppHeader } from "@/components/app-header";
 import { Avatar, ComparisonBar } from "@/components/ui";
 import { computeMatch, CULTURAL_AXES } from "@/lib/clevy-data";
@@ -22,9 +23,10 @@ export default async function CompanyCandidateDetailPage({
   if (!session) redirect("/login");
   if (session.role === "candidate") redirect("/candidato");
 
+  const t = await getDict();
   const company = await getCompanyForUser(session.userId);
-  if (!company) redirect("/empresa/perfil");
-  if (!company.hasCulture) redirect("/empresa/cultura");
+  if (!company) redirect("/empresa");
+  if (!company.hasCulture) redirect(isManager(session.role) ? "/empresa/cultura" : "/empresa");
 
   const companyAxes = await getOrgCultureAxes(company.id);
   const match = computeMatch(companyAxes, candidate.values);
@@ -65,7 +67,7 @@ export default async function CompanyCandidateDetailPage({
               textUnderlineOffset: 3,
             }}
           >
-            ← Volver a candidatos
+            {t.candidatos.detailBack}
           </Link>
 
           <div
@@ -111,8 +113,7 @@ export default async function CompanyCandidateDetailPage({
                     lineHeight: 1.5,
                   }}
                 >
-                  Completó su perfil cultural conversando con el agente.
-                  Todavía no ve tu marca — solo el perfil.
+                  {t.candidatos.completedNote}
                 </p>
               </div>
             </div>
@@ -134,7 +135,7 @@ export default async function CompanyCandidateDetailPage({
                   color: "var(--fg-dim)",
                 }}
               >
-                Afinidad cultural
+                {t.candidatos.affinity}
               </div>
               <div
                 style={{
@@ -164,7 +165,7 @@ export default async function CompanyCandidateDetailPage({
                     fontFamily: "inherit",
                   }}
                 >
-                  Contactar candidato
+                  {t.candidatos.contact}
                 </button>
                 <button
                   type="button"
@@ -180,7 +181,7 @@ export default async function CompanyCandidateDetailPage({
                     fontFamily: "inherit",
                   }}
                 >
-                  Guardar para revisar
+                  {t.candidatos.saveForLater}
                 </button>
               </div>
             </div>
@@ -210,7 +211,7 @@ export default async function CompanyCandidateDetailPage({
                   marginBottom: 12,
                 }}
               >
-                Lo que busca
+                {t.candidatos.whatTheySeek}
               </div>
               <div
                 style={{
@@ -237,7 +238,7 @@ export default async function CompanyCandidateDetailPage({
                   marginBottom: 12,
                 }}
               >
-                Señales fuertes
+                {t.candidatos.strongSignals}
               </div>
               <div
                 style={{
@@ -259,7 +260,7 @@ export default async function CompanyCandidateDetailPage({
                   marginBottom: 12,
                 }}
               >
-                Podría fricción
+                {t.candidatos.friction}
               </div>
               <div
                 style={{
@@ -291,7 +292,7 @@ export default async function CompanyCandidateDetailPage({
                   color: "var(--fg-dim)",
                 }}
               >
-                Comparación cultural
+                {t.candidatos.culturalComparison}
               </div>
               <div
                 style={{
@@ -310,7 +311,7 @@ export default async function CompanyCandidateDetailPage({
                       background: "var(--accent)",
                     }}
                   />{" "}
-                  Su perfil
+                  {t.candidatos.theirProfile}
                 </span>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                   <span
@@ -321,7 +322,7 @@ export default async function CompanyCandidateDetailPage({
                       background: "var(--fg)",
                     }}
                   />{" "}
-                  Su equipo
+                  {t.candidatos.yourTeam}
                 </span>
               </div>
             </div>
@@ -340,7 +341,7 @@ export default async function CompanyCandidateDetailPage({
                     }}
                   >
                     <div style={{ fontSize: 13, color: "var(--fg-dim)" }}>
-                      {axis.left} ↔ {axis.right}
+                      {t.axes[axis.id].left} ↔ {t.axes[axis.id].right}
                     </div>
                     <ComparisonBar
                       userValue={candidateValue}
@@ -396,7 +397,7 @@ export default async function CompanyCandidateDetailPage({
                   color: "var(--fg-dim)",
                 }}
               >
-                Notas del agente
+                {t.candidatos.notes}
               </div>
             </div>
             <div

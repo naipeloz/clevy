@@ -4,22 +4,19 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { getCurrentSession, isManager } from "@/lib/auth";
+import { getDict, getLocale, type Dict } from "@/lib/i18n";
 import { AppHeader } from "@/components/app-header";
 import { ReadOnlyBanner, Tag } from "@/components/ui";
 import { getCompanyForUser, listJobsForCompany } from "@/lib/company-db";
 import { formatLocation } from "@/lib/location";
 
-const STATUS_LABEL: Record<string, string> = {
-  draft: "Borrador",
-  open: "Abierta",
-  paused: "Pausada",
-  closed: "Cerrada",
-};
-
 export default async function EmpresaHome() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
   if (session.role === "candidate") redirect("/candidato");
+
+  const t = await getDict();
+  const locale = await getLocale();
 
   const [user] = await db
     .select({ name: users.name })
@@ -34,7 +31,7 @@ export default async function EmpresaHome() {
   // never gets sent to those pages — that would bounce back into a redirect loop.
   if (!company) {
     if (manager) redirect("/empresa/perfil");
-    return <NoCompanyState userName={user.name ?? ""} />;
+    return <NoCompanyState userName={user.name ?? ""} t={t} />;
   }
   if (!company.hasCulture && manager) redirect("/empresa/cultura");
 
@@ -50,7 +47,7 @@ export default async function EmpresaHome() {
       }}
     >
       <AppHeader userName={user.name ?? ""} />
-      {!manager ? <ReadOnlyBanner /> : null}
+      {!manager ? <ReadOnlyBanner message={t.ui.readOnlyDefault} /> : null}
       <main style={{ flex: 1, padding: "40px 64px 80px", overflow: "auto" }}>
         <div
           style={{
@@ -72,8 +69,7 @@ export default async function EmpresaHome() {
                 color: "var(--fg-dim)",
               }}
             >
-              El HR manager todavía no definió la cultura de la empresa. Los
-              matches con candidatos aparecerán cuando lo haga.
+              {t.empresa.culturePending}
             </div>
           ) : null}
           <div
@@ -96,7 +92,7 @@ export default async function EmpresaHome() {
               >
                 {company.name}
                 {company.industry ? ` · ${company.industry}` : ""}
-                {manager ? "" : " · Solo lectura"}
+                {manager ? "" : ` · ${t.empresa.readOnlyTag}`}
               </div>
               <h1
                 style={{
@@ -107,7 +103,7 @@ export default async function EmpresaHome() {
                   fontWeight: 400,
                 }}
               >
-                Vacantes
+                {t.empresa.vacancies}
               </h1>
             </div>
             <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -115,18 +111,18 @@ export default async function EmpresaHome() {
                 href="/empresa/candidatos"
                 style={linkStyle}
               >
-                Pool de talento
+                {t.empresa.talentPool}
               </Link>
               {manager ? (
                 <>
                   <Link href="/empresa/equipo" style={linkStyle}>
-                    Equipo
+                    {t.empresa.team}
                   </Link>
                   <Link href="/empresa/perfil" style={linkStyle}>
-                    Editar empresa
+                    {t.empresa.editCompany}
                   </Link>
                   <Link href="/empresa/vacantes/nueva" style={primaryBtnStyle}>
-                    Nueva vacante <span aria-hidden>→</span>
+                    {t.empresa.newVacancy} <span aria-hidden>→</span>
                   </Link>
                 </>
               ) : null}
@@ -147,10 +143,10 @@ export default async function EmpresaHome() {
                 color: "var(--fg-dim)",
               }}
             >
-              <span>Vacante</span>
-              <span>Ubicación</span>
-              <span>Estado</span>
-              <span style={{ textAlign: "right" }}>Postulados</span>
+              <span>{t.empresa.thVacancy}</span>
+              <span>{t.empresa.thLocation}</span>
+              <span>{t.empresa.thStatus}</span>
+              <span style={{ textAlign: "right" }}>{t.empresa.thApplicants}</span>
               <span />
             </div>
 
@@ -162,7 +158,7 @@ export default async function EmpresaHome() {
                   color: "var(--fg-dim)",
                 }}
               >
-                Todavía no hay vacantes.{" "}
+                {t.empresa.noVacancies}{" "}
                 {manager ? (
                   <Link
                     href="/empresa/vacantes/nueva"
@@ -172,7 +168,7 @@ export default async function EmpresaHome() {
                       textUnderlineOffset: 3,
                     }}
                   >
-                    Creá la primera →
+                    {t.empresa.createFirst}
                   </Link>
                 ) : null}
               </div>
@@ -209,20 +205,23 @@ export default async function EmpresaHome() {
                           fontFamily: "var(--font-inter), sans-serif",
                         }}
                       >
-                        Remoto
+                        {t.empresa.remote}
                       </span>
                     ) : null}
                   </div>
                   <div style={{ fontSize: 13, color: "var(--fg-dim)" }}>
-                    {formatLocation({
-                      city: j.city,
-                      countryCode: j.countryCode,
-                      location: j.location,
-                    }) || "—"}
+                    {formatLocation(
+                      {
+                        city: j.city,
+                        countryCode: j.countryCode,
+                        location: j.location,
+                      },
+                      locale
+                    ) || "—"}
                   </div>
                   <div>
                     <Tag tone={j.status === "open" ? "accent" : "default"}>
-                      {STATUS_LABEL[j.status] ?? j.status}
+                      {t.statuses[j.status]}
                     </Tag>
                   </div>
                   <div
@@ -245,7 +244,7 @@ export default async function EmpresaHome() {
   );
 }
 
-function NoCompanyState({ userName }: { userName: string }) {
+function NoCompanyState({ userName, t }: { userName: string; t: Dict }) {
   return (
     <div
       style={{
@@ -256,7 +255,7 @@ function NoCompanyState({ userName }: { userName: string }) {
       }}
     >
       <AppHeader userName={userName} />
-      <ReadOnlyBanner />
+      <ReadOnlyBanner message={t.ui.readOnlyDefault} />
       <main
         style={{
           flex: 1,
@@ -278,7 +277,7 @@ function NoCompanyState({ userName }: { userName: string }) {
             fontWeight: 400,
           }}
         >
-          Tu cuenta todavía no está vinculada a una empresa.
+          {t.empresa.noCompanyTitle}
         </h1>
         <p
           style={{
@@ -289,8 +288,7 @@ function NoCompanyState({ userName }: { userName: string }) {
             lineHeight: 1.6,
           }}
         >
-          Pedile al HR manager que te reenvíe la invitación o que verifique que
-          tu cuenta quedó asociada al equipo.
+          {t.empresa.noCompanySubtitle}
         </p>
       </main>
     </div>

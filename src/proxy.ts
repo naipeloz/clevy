@@ -20,6 +20,7 @@ const PUBLIC_PATHS = [
   "/signup",
   "/forgot-password",
   "/api/auth",
+  "/api/locale",
 ];
 
 async function getSession(

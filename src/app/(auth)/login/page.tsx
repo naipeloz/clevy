@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentSession, homeForRole } from "@/lib/auth";
+import { getDict } from "@/lib/i18n";
 import { AuthShell } from "../auth-shell";
 import { LoginForm } from "./login-form";
 
@@ -10,14 +11,16 @@ export default async function LoginPage() {
     redirect(homeForRole(session.role));
   }
 
+  const t = await getDict();
+
   return (
     <AuthShell
-      eyebrow="Iniciar sesión"
-      title={<>Hola de nuevo.</>}
-      subtitle="Entra a tu cuenta para ver tus matches y seguir construyendo tu perfil cultural."
+      eyebrow={t.auth.login.eyebrow}
+      title={<>{t.auth.login.title}</>}
+      subtitle={t.auth.login.subtitle}
       footer={
         <>
-          ¿Todavía no tenés cuenta?{" "}
+          {t.auth.login.footerQuestion}{" "}
           <Link
             href="/signup"
             style={{
@@ -26,7 +29,7 @@ export default async function LoginPage() {
               textUnderlineOffset: 3,
             }}
           >
-            Crear cuenta
+            {t.auth.login.footerCta}
           </Link>
         </>
       }

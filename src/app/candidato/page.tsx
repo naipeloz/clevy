@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { getCurrentSession } from "@/lib/auth";
+import { getDict } from "@/lib/i18n";
 import { AppHeader } from "@/components/app-header";
 import { isCandidateProfile } from "@/lib/clevy-data";
 
@@ -22,6 +23,8 @@ export default async function CandidatoHome() {
   if (isCandidateProfile(user?.culturalProfile)) {
     redirect("/candidato/perfil");
   }
+
+  const t = await getDict();
 
   return (
     <div
@@ -53,7 +56,7 @@ export default async function CandidatoHome() {
             color: "var(--fg-dim)",
           }}
         >
-          Tu perfil cultural
+          {t.candidato.homeEyebrow}
         </span>
         <h1
           style={{
@@ -66,7 +69,9 @@ export default async function CandidatoHome() {
             maxWidth: 720,
           }}
         >
-          Descubrí <em style={{ color: "var(--accent)" }}>cómo trabajás</em> mejor.
+          {t.candidato.homeTitlePre}
+          <em style={{ color: "var(--accent)" }}>{t.candidato.homeTitleEm}</em>
+          {t.candidato.homeTitlePost}
         </h1>
         <p
           style={{
@@ -77,8 +82,7 @@ export default async function CandidatoHome() {
             maxWidth: 520,
           }}
         >
-          Respondé un formulario corto de 6 preguntas. Vas a obtener tu perfil
-          cultural en 7 dimensiones — lo podés editar cuando quieras.
+          {t.candidato.homeSubtitle}
         </p>
         <Link
           href="/candidato/cuestionario"
@@ -97,7 +101,7 @@ export default async function CandidatoHome() {
             textDecoration: "none",
           }}
         >
-          Completar formulario
+          {t.candidato.homeCta}
           <span aria-hidden>→</span>
         </Link>
       </main>

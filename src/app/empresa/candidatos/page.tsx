@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentSession, isManager } from "@/lib/auth";
+import { getDict } from "@/lib/i18n";
 import { AppHeader } from "@/components/app-header";
 import { Avatar, ReadOnlyBanner, Tag } from "@/components/ui";
-import { COMPANY_VALUES_OPTIONS } from "@/lib/clevy-data";
 import { listCandidatesScored } from "@/lib/clevy-db";
 import {
   getCompanyForUser,
@@ -27,6 +27,7 @@ export default async function CompanyDashboardPage({
   if (!session) redirect("/login");
   if (session.role === "candidate") redirect("/candidato");
 
+  const t = await getDict();
   const manager = isManager(session.role);
   const company = await getCompanyForUser(session.userId);
   // /empresa handles the manager onboarding (create company) and the support
@@ -53,8 +54,9 @@ export default async function CompanyDashboardPage({
     .filter((c) => c.status === activeTab)
     .sort((a, b) => b.match - a.match);
 
+  const valueDict = t.values as Record<string, { label: string }>;
   const valueLabels = (cultureMeta?.selected ?? [])
-    .map((id) => COMPANY_VALUES_OPTIONS.find((v) => v.id === id)?.label)
+    .map((id) => valueDict[id]?.label)
     .filter((x): x is string => Boolean(x));
 
   const highMatch = scored.filter((c) => c.match >= 80).length;
@@ -72,7 +74,7 @@ export default async function CompanyDashboardPage({
       }}
     >
       <AppHeader userName={company.name} />
-      {!manager ? <ReadOnlyBanner /> : null}
+      {!manager ? <ReadOnlyBanner message={t.ui.readOnlyDefault} /> : null}
       <main
         style={{
           flex: 1,
@@ -119,9 +121,7 @@ export default async function CompanyDashboardPage({
                   fontWeight: 400,
                 }}
               >
-                Candidatos que encajan
-                <br />
-                en cómo trabajan.
+                {t.candidatos.title}
               </h1>
             </div>
             <div
@@ -149,7 +149,7 @@ export default async function CompanyDashboardPage({
                     color: "var(--fg-dim)",
                   }}
                 >
-                  Su perfil cultural
+                  {t.candidatos.yourProfile}
                 </div>
                 <Link
                   href="/empresa/cultura"
@@ -160,7 +160,7 @@ export default async function CompanyDashboardPage({
                     textUnderlineOffset: 3,
                   }}
                 >
-                  Editar
+                  {t.candidatos.edit}
                 </Link>
               </div>
               <div
@@ -185,10 +185,10 @@ export default async function CompanyDashboardPage({
             }}
           >
             {[
-              { k: "Candidatos con ≥80% fit", v: String(highMatch).padStart(2, "0") },
-              { k: "Contactados esta semana", v: String(contacted).padStart(2, "0") },
-              { k: "Match promedio", v: `${Math.round(avgMatch)}%` },
-              { k: "Tiempo promedio a match", v: "2.3d" },
+              { k: t.candidatos.statHighFit, v: String(highMatch).padStart(2, "0") },
+              { k: t.candidatos.statContacted, v: String(contacted).padStart(2, "0") },
+              { k: t.candidatos.statAvgMatch, v: `${Math.round(avgMatch)}%` },
+              { k: t.candidatos.statAvgTime, v: "2.3d" },
             ].map((s, i) => (
               <div
                 key={s.k}
@@ -222,7 +222,15 @@ export default async function CompanyDashboardPage({
             ))}
           </div>
 
-          <CandidateTabs counts={counts} activeTab={activeTab} />
+          <CandidateTabs
+            counts={counts}
+            activeTab={activeTab}
+            labels={{
+              new: t.candidatos.tabNew,
+              reviewed: t.candidatos.tabReviewed,
+              contacted: t.candidatos.tabContacted,
+            }}
+          />
 
           <div
             style={{ display: "flex", flexDirection: "column" }}
@@ -235,7 +243,7 @@ export default async function CompanyDashboardPage({
                   color: "var(--fg-dim)",
                 }}
               >
-                No hay candidatos en esta pestaña todavía.
+                {t.candidatos.empty}
               </div>
             ) : (
               filtered.map((c) => (

@@ -8,9 +8,11 @@ import {
   SubmitButton,
   TextInput,
 } from "../form-controls";
+import { useT } from "@/components/locale-provider";
 
 export function LoginForm() {
   const router = useRouter();
+  const t = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -32,13 +34,13 @@ export function LoginForm() {
         redirectTo?: string;
       };
       if (!res.ok) {
-        setError(data.error ?? "No se pudo iniciar sesión");
+        setError(data.error ?? t.auth.login.error);
         return;
       }
       router.push(data.redirectTo ?? "/");
       router.refresh();
     } catch {
-      setError("Error de red. Intentalo de nuevo.");
+      setError(t.common.networkError);
     } finally {
       setPending(false);
     }
@@ -51,7 +53,7 @@ export function LoginForm() {
       noValidate
     >
       <ErrorBanner message={error} />
-      <Field label="Email">
+      <Field label={t.auth.fieldEmail}>
         {(id) => (
           <TextInput
             id={id}
@@ -65,7 +67,7 @@ export function LoginForm() {
           />
         )}
       </Field>
-      <Field label="Contraseña">
+      <Field label={t.auth.fieldPassword}>
         {(id) => (
           <TextInput
             id={id}
@@ -79,7 +81,7 @@ export function LoginForm() {
           />
         )}
       </Field>
-      <SubmitButton pending={pending}>Entrar</SubmitButton>
+      <SubmitButton pending={pending}>{t.auth.login.submit}</SubmitButton>
     </form>
   );
 }

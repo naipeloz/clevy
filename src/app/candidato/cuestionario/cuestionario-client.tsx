@@ -5,24 +5,28 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ClevyMark } from "@/components/brand";
 import { ProgressBar } from "@/components/ui";
+import { useT } from "@/components/locale-provider";
+import { fmt } from "@/lib/fmt";
 import { QUESTIONS } from "@/lib/clevy-data";
 
-function intensityLabel(v: number) {
-  if (v < 30) return "Inclinación fuerte a la izquierda";
-  if (v < 45) return "Hacia la izquierda";
-  if (v < 55) return "Balanceado en el medio";
-  if (v < 70) return "Hacia la derecha";
-  return "Inclinación fuerte a la derecha";
+function intensityIndex(v: number) {
+  if (v < 30) return 0;
+  if (v < 45) return 1;
+  if (v < 55) return 2;
+  if (v < 70) return 3;
+  return 4;
 }
 
 export function CuestionarioClient() {
   const router = useRouter();
+  const t = useT();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const q = QUESTIONS[step];
+  const qt = t.questions[q.id as keyof typeof t.questions];
   // The current answer is the single source of truth — no synced draft state.
   const value = answers[q.id] ?? 50;
 
@@ -45,14 +49,14 @@ export function CuestionarioClient() {
         redirectTo?: string;
       };
       if (!res.ok) {
-        setError(data.error ?? "No se pudo guardar el perfil");
+        setError(data.error ?? t.candidato.error);
         setPending(false);
         return;
       }
       router.push(data.redirectTo ?? "/candidato/perfil");
       router.refresh();
     } catch {
-      setError("Error de red. Intentalo de nuevo.");
+      setError(t.common.networkError);
       setPending(false);
     }
   }
@@ -69,7 +73,7 @@ export function CuestionarioClient() {
     setStep(step - 1);
   }
 
-  const draftLabel = intensityLabel(value);
+  const draftLabel = t.candidato.intensity[intensityIndex(value)];
 
   return (
     <div
@@ -101,7 +105,7 @@ export function CuestionarioClient() {
               fontVariantNumeric: "tabular-nums",
             }}
           >
-            <span>Cuestionario cultural</span>
+            <span>{t.candidato.quizTitle}</span>
             <span>
               {step + 1} / {QUESTIONS.length}
             </span>
@@ -117,7 +121,7 @@ export function CuestionarioClient() {
             textUnderlineOffset: 3,
           }}
         >
-          Salir
+          {t.common.exit}
         </Link>
       </header>
 
@@ -148,7 +152,7 @@ export function CuestionarioClient() {
                 color: "var(--fg-dim)",
               }}
             >
-              Pregunta {step + 1}
+              {fmt(t.candidato.question, { n: step + 1 })}
             </div>
             <h2
               style={{
@@ -160,9 +164,9 @@ export function CuestionarioClient() {
                 fontWeight: 400,
               }}
             >
-              {q.title}
+              {qt.title}
             </h2>
-            {q.subtitle ? (
+            {qt.subtitle ? (
               <p
                 style={{
                   fontSize: 16,
@@ -171,7 +175,7 @@ export function CuestionarioClient() {
                   lineHeight: 1.5,
                 }}
               >
-                {q.subtitle}
+                {qt.subtitle}
               </p>
             ) : null}
           </div>
@@ -200,9 +204,9 @@ export function CuestionarioClient() {
                     opacity: 0.7,
                   }}
                 >
-                  Izquierda
+                  {t.candidato.left}
                 </div>
-                {q.leftLabel}
+                {qt.leftLabel}
               </div>
               <div
                 style={{
@@ -220,9 +224,9 @@ export function CuestionarioClient() {
                     opacity: 0.7,
                   }}
                 >
-                  Derecha
+                  {t.candidato.right}
                 </div>
-                {q.rightLabel}
+                {qt.rightLabel}
               </div>
             </div>
 
@@ -334,7 +338,7 @@ export function CuestionarioClient() {
                 fontFamily: "inherit",
               }}
             >
-              ← Anterior
+              {t.candidato.prev}
             </button>
             <button
               type="button"
@@ -357,10 +361,10 @@ export function CuestionarioClient() {
               }}
             >
               {pending
-                ? "Guardando…"
+                ? t.candidato.saving
                 : step === QUESTIONS.length - 1
-                  ? "Generar perfil →"
-                  : "Siguiente →"}
+                  ? t.candidato.finish
+                  : t.candidato.next}
             </button>
           </div>
         </div>

@@ -4,6 +4,8 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { companies, invitations } from "@/db/schema";
 import { getCurrentSession, homeForRole } from "@/lib/auth";
+import { getDict } from "@/lib/i18n";
+import { fmt } from "@/lib/fmt";
 import { AuthShell } from "../auth-shell";
 import { SignupForm } from "./signup-form";
 
@@ -49,33 +51,35 @@ export default async function SignupPage({
   }
 
   const initialRole = role === "company" ? "company" : "candidate";
+  const t = await getDict();
+  const s = t.auth.signup;
 
   return (
     <AuthShell
-      eyebrow={inviteValid ? "Aceptar invitación" : "Crear cuenta"}
+      eyebrow={inviteValid ? s.eyebrowInvite : s.eyebrowCreate}
       title={
         inviteValid ? (
           inviteIsCandidate ? (
-            <>Completá tu perfil cultural.</>
+            <>{s.titleCandidate}</>
           ) : inviteCompany ? (
-            <>Unite al equipo de {inviteCompany}.</>
+            <>{fmt(s.titleTeam, { company: inviteCompany })}</>
           ) : (
-            <>Unite al equipo.</>
+            <>{s.titleTeamNoCompany}</>
           )
         ) : (
-          <>Empezá tu perfil cultural.</>
+          <>{s.titleDefault}</>
         )
       }
       subtitle={
         inviteValid
           ? inviteIsCandidate
-            ? "Creá tu cuenta y respondé un formulario corto para ver tu perfil cultural."
-            : "Creá tu cuenta para colaborar monitoreando vacantes y postulaciones."
-          : "En menos de 10 minutos vas a tener un perfil cuantificado y matches con afinidad real."
+            ? s.subtitleCandidate
+            : s.subtitleTeam
+          : s.subtitleDefault
       }
       footer={
         <>
-          ¿Ya tenés cuenta?{" "}
+          {s.footerQuestion}{" "}
           <Link
             href="/login"
             style={{
@@ -84,7 +88,7 @@ export default async function SignupPage({
               textUnderlineOffset: 3,
             }}
           >
-            Iniciar sesión
+            {s.footerCta}
           </Link>
         </>
       }
