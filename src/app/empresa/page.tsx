@@ -7,6 +7,7 @@ import { getCurrentSession, isManager } from "@/lib/auth";
 import { AppHeader } from "@/components/app-header";
 import { ReadOnlyBanner, Tag } from "@/components/ui";
 import { getCompanyForUser, listJobsForCompany } from "@/lib/company-db";
+import { formatLocation } from "@/lib/location";
 
 const STATUS_LABEL: Record<string, string> = {
   draft: "Borrador",
@@ -213,7 +214,11 @@ export default async function EmpresaHome() {
                     ) : null}
                   </div>
                   <div style={{ fontSize: 13, color: "var(--fg-dim)" }}>
-                    {j.location || "—"}
+                    {formatLocation({
+                      city: j.city,
+                      countryCode: j.countryCode,
+                      location: j.location,
+                    }) || "—"}
                   </div>
                   <div>
                     <Tag tone={j.status === "open" ? "accent" : "default"}>

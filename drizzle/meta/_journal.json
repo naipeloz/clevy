@@ -36,6 +36,13 @@
       "when": 1780144998885,
       "tag": "0004_nosy_rocket_raccoon",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1780505852134,
+      "tag": "0005_red_prodigy",
+      "breakpoints": true
     }
   ]
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ClevyMark } from "@/components/brand";
 import { ProgressBar } from "@/components/ui";
+import { LocationPicker } from "@/components/location-picker";
 import {
   ErrorBanner,
   Field,
@@ -16,7 +17,8 @@ type CompanyFields = {
   name: string;
   tagline: string;
   industry: string;
-  location: string;
+  countryCode: string | null;
+  city: string | null;
   domain: string;
 };
 
@@ -24,12 +26,19 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
   const router = useRouter();
   const isEdit = initial !== null;
   const [fields, setFields] = useState<CompanyFields>(
-    initial ?? { name: "", tagline: "", industry: "", location: "", domain: "" }
+    initial ?? {
+      name: "",
+      tagline: "",
+      industry: "",
+      countryCode: null,
+      city: null,
+      domain: "",
+    }
   );
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  function update(key: keyof CompanyFields, value: string) {
+  function update(key: "name" | "tagline" | "industry" | "domain", value: string) {
     setFields((f) => ({ ...f, [key]: value }));
   }
 
@@ -176,16 +185,17 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
                 />
               )}
             </Field>
-            <Field label="Ubicación">
-              {(id) => (
-                <TextInput
-                  id={id}
-                  value={fields.location}
-                  onChange={(e) => update("location", e.target.value)}
-                  placeholder="Remoto · LatAm"
-                />
-              )}
-            </Field>
+            <LocationPicker
+              countryCode={fields.countryCode}
+              city={fields.city}
+              onChange={(loc) =>
+                setFields((f) => ({
+                  ...f,
+                  countryCode: loc.countryCode,
+                  city: loc.city,
+                }))
+              }
+            />
             <Field label="Dominio" hint="Opcional.">
               {(id) => (
                 <TextInput

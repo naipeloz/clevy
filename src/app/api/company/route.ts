@@ -33,12 +33,15 @@ export async function POST(request: Request) {
     );
   }
 
+  const countryCode = optionalString(raw.countryCode);
   const fields = {
     name,
     domain: optionalString(raw.domain),
     tagline: optionalString(raw.tagline),
     industry: optionalString(raw.industry),
     location: optionalString(raw.location),
+    countryCode: countryCode ? countryCode.toUpperCase().slice(0, 2) : null,
+    city: optionalString(raw.city),
     logoUrl: optionalString(raw.logoUrl),
   };
 

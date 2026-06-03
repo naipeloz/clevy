@@ -20,7 +20,8 @@ export default async function PerfilPage() {
               name: company.name,
               tagline: company.tagline ?? "",
               industry: company.industry ?? "",
-              location: company.location ?? "",
+              countryCode: company.countryCode,
+              city: company.city,
               domain: company.domain ?? "",
             }
           : null

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ClevyMark } from "@/components/brand";
+import { LocationPicker } from "@/components/location-picker";
+import { SUPPORTED_CURRENCIES } from "@/lib/location";
 import {
   ErrorBanner,
   Field,
@@ -15,10 +17,12 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [location, setLocation] = useState("");
+  const [countryCode, setCountryCode] = useState<string | null>(null);
+  const [city, setCity] = useState<string | null>(null);
   const [remote, setRemote] = useState(false);
   const [salaryMin, setSalaryMin] = useState("");
   const [salaryMax, setSalaryMax] = useState("");
+  const [currency, setCurrency] = useState<string>("USD");
   const [publish, setPublish] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -34,10 +38,12 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
         body: JSON.stringify({
           title,
           description: description || null,
-          location: location || null,
+          countryCode,
+          city,
           remote,
           salaryMin: salaryMin ? Number(salaryMin) : null,
           salaryMax: salaryMax ? Number(salaryMax) : null,
+          currency,
           status: publish ? "open" : "draft",
         }),
       });
@@ -150,16 +156,14 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
                 />
               )}
             </Field>
-            <Field label="Ubicación">
-              {(id) => (
-                <TextInput
-                  id={id}
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="CDMX · Híbrido"
-                />
-              )}
-            </Field>
+            <LocationPicker
+              countryCode={countryCode}
+              city={city}
+              onChange={(loc) => {
+                setCountryCode(loc.countryCode);
+                setCity(loc.city);
+              }}
+            />
             <label
               style={{
                 display: "flex",
@@ -177,7 +181,34 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
               />
               Trabajo remoto
             </label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+              <Field label="Moneda">
+                {(id) => (
+                  <select
+                    id={id}
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    style={{
+                      height: 44,
+                      padding: "10px 14px",
+                      background: "var(--bg)",
+                      color: "var(--fg)",
+                      border: "1px solid var(--hairline-strong)",
+                      borderRadius: 4,
+                      fontSize: 15,
+                      fontFamily: "inherit",
+                      outline: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {SUPPORTED_CURRENCIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c === "USD" ? "USD (dólares)" : "UYU (pesos uruguayos)"}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </Field>
               <Field label="Salario mín. (opcional)">
                 {(id) => (
                   <TextInput

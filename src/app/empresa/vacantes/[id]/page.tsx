@@ -9,6 +9,7 @@ import {
   getOrgCultureAxes,
   listApplicantsForJob,
 } from "@/lib/company-db";
+import { formatLocation, formatSalary } from "@/lib/location";
 import { JobStatusControl } from "./status-control";
 
 type Params = Promise<{ id: string }>;
@@ -48,10 +49,12 @@ export default async function VacanteDetailPage({
   const companyAxes = await getOrgCultureAxes(company.id);
   const applicants = await listApplicantsForJob(id, companyAxes);
 
-  const salary =
-    job.salaryMin || job.salaryMax
-      ? `${job.salaryMin ?? "—"} – ${job.salaryMax ?? "—"}`
-      : null;
+  const salary = formatSalary(job.salaryMin, job.salaryMax, job.currency);
+  const locationLabel = formatLocation({
+    city: job.city,
+    countryCode: job.countryCode,
+    location: job.location,
+  });
 
   return (
     <div
@@ -120,7 +123,7 @@ export default async function VacanteDetailPage({
                   gap: 16,
                 }}
               >
-                {job.location ? <span>{job.location}</span> : null}
+                {locationLabel ? <span>{locationLabel}</span> : null}
                 {salary ? <span>{salary}</span> : null}
               </div>
             </div>

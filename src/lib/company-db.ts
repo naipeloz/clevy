@@ -25,6 +25,8 @@ export type CompanyForUser = {
   tagline: string | null;
   industry: string | null;
   location: string | null;
+  countryCode: string | null;
+  city: string | null;
   logoUrl: string | null;
   hasCulture: boolean;
 };
@@ -34,9 +36,12 @@ export type JobRow = {
   title: string;
   description: string | null;
   location: string | null;
+  countryCode: string | null;
+  city: string | null;
   remote: boolean;
   salaryMin: number | null;
   salaryMax: number | null;
+  currency: string;
   status: "draft" | "open" | "paused" | "closed";
   applicantCount: number;
   createdAt: Date;
@@ -96,6 +101,8 @@ export async function getCompanyForUser(
       tagline: companiesTable.tagline,
       industry: companiesTable.industry,
       location: companiesTable.location,
+      countryCode: companiesTable.countryCode,
+      city: companiesTable.city,
       logoUrl: companiesTable.logoUrl,
       cultureValues: orgCulture.values,
     })
@@ -114,6 +121,8 @@ export async function getCompanyForUser(
     tagline: row.tagline,
     industry: row.industry,
     location: row.location,
+    countryCode: row.countryCode,
+    city: row.city,
     logoUrl: row.logoUrl,
     hasCulture: isAxisValues(row.cultureValues),
   };
@@ -167,9 +176,12 @@ export async function listJobsForCompany(
       title: jobsTable.title,
       description: jobsTable.description,
       location: jobsTable.location,
+      countryCode: jobsTable.countryCode,
+      city: jobsTable.city,
       remote: jobsTable.remote,
       salaryMin: jobsTable.salaryMin,
       salaryMax: jobsTable.salaryMax,
+      currency: jobsTable.currency,
       status: jobsTable.status,
       createdAt: jobsTable.createdAt,
     })
@@ -204,9 +216,12 @@ export async function getJobForCompany(
       title: jobsTable.title,
       description: jobsTable.description,
       location: jobsTable.location,
+      countryCode: jobsTable.countryCode,
+      city: jobsTable.city,
       remote: jobsTable.remote,
       salaryMin: jobsTable.salaryMin,
       salaryMax: jobsTable.salaryMax,
+      currency: jobsTable.currency,
       status: jobsTable.status,
       companyId: jobsTable.companyId,
       createdAt: jobsTable.createdAt,

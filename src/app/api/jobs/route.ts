@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { jobs, users } from "@/db/schema";
 import { getCurrentSession, isManager } from "@/lib/auth";
+import { isCurrency } from "@/lib/location";
 
 const VALID_STATUS = new Set(["draft", "open", "paused", "closed"]);
 
@@ -57,6 +58,9 @@ export async function POST(request: Request) {
       ? (raw.status as "draft" | "open" | "paused" | "closed")
       : "draft";
 
+  const countryCode = optionalString(raw.countryCode);
+  const currency = isCurrency(raw.currency) ? raw.currency : "USD";
+
   const [created] = await db
     .insert(jobs)
     .values({
@@ -65,9 +69,12 @@ export async function POST(request: Request) {
       title,
       description: optionalString(raw.description),
       location: optionalString(raw.location),
+      countryCode: countryCode ? countryCode.toUpperCase().slice(0, 2) : null,
+      city: optionalString(raw.city),
       remote: raw.remote === true,
       salaryMin: optionalInt(raw.salaryMin),
       salaryMax: optionalInt(raw.salaryMax),
+      currency,
       status,
     })
     .returning({ id: jobs.id });
