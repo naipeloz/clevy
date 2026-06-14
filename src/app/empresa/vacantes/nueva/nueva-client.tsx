@@ -25,7 +25,20 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
   const [salaryMin, setSalaryMin] = useState("");
   const [salaryMax, setSalaryMax] = useState("");
   const [currency, setCurrency] = useState<string>("USD");
+  const [hardSkills, setHardSkills] = useState<string[]>([]);
+  const [skillDraft, setSkillDraft] = useState("");
+  const [experienceMin, setExperienceMin] = useState("");
+  const [industry, setIndustry] = useState("");
   const [publish, setPublish] = useState(true);
+
+  function addSkill(raw: string) {
+    const s = raw.trim();
+    if (!s) return;
+    setHardSkills((prev) =>
+      prev.includes(s) || prev.length >= 30 ? prev : [...prev, s]
+    );
+    setSkillDraft("");
+  }
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -46,6 +59,9 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
           salaryMin: salaryMin ? Number(salaryMin) : null,
           salaryMax: salaryMax ? Number(salaryMax) : null,
           currency,
+          hardSkills,
+          experienceMin: experienceMin ? Number(experienceMin) : null,
+          industry: industry || null,
           status: publish ? "open" : "draft",
         }),
       });
@@ -234,6 +250,114 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
                 )}
               </Field>
             </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <Field label={t.vacante.industryLabel}>
+                {(id) => (
+                  <TextInput
+                    id={id}
+                    value={industry}
+                    onChange={(e) => setIndustry(e.target.value)}
+                    placeholder={t.vacante.industryPlaceholder}
+                  />
+                )}
+              </Field>
+              <Field label={t.vacante.experienceLabel}>
+                {(id) => (
+                  <TextInput
+                    id={id}
+                    type="number"
+                    min={0}
+                    value={experienceMin}
+                    onChange={(e) => setExperienceMin(e.target.value)}
+                    placeholder="3"
+                  />
+                )}
+              </Field>
+            </div>
+
+            <Field label={t.vacante.hardSkillsLabel} hint={t.vacante.hardSkillsHint}>
+              {(id) => (
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    alignItems: "center",
+                    border: "1px solid var(--hairline-strong)",
+                    borderRadius: 4,
+                    padding: "8px 10px",
+                    minHeight: 44,
+                  }}
+                >
+                  {hardSkills.map((s) => (
+                    <span
+                      key={s}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "4px 10px",
+                        background: "var(--accent)",
+                        color: "var(--bg)",
+                        borderRadius: 999,
+                        fontSize: 13,
+                      }}
+                    >
+                      {s}
+                      <button
+                        type="button"
+                        aria-label={`Quitar ${s}`}
+                        onClick={() =>
+                          setHardSkills((prev) => prev.filter((x) => x !== s))
+                        }
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "var(--bg)",
+                          cursor: "pointer",
+                          fontSize: 13,
+                          lineHeight: 1,
+                          padding: 0,
+                          fontFamily: "inherit",
+                        }}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                  <input
+                    id={id}
+                    value={skillDraft}
+                    onChange={(e) => setSkillDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === ",") {
+                        e.preventDefault();
+                        addSkill(skillDraft);
+                      } else if (
+                        e.key === "Backspace" &&
+                        skillDraft === "" &&
+                        hardSkills.length > 0
+                      ) {
+                        setHardSkills((prev) => prev.slice(0, -1));
+                      }
+                    }}
+                    onBlur={() => addSkill(skillDraft)}
+                    placeholder={hardSkills.length === 0 ? t.vacante.hardSkillsPlaceholder : ""}
+                    style={{
+                      flex: 1,
+                      minWidth: 120,
+                      border: "none",
+                      outline: "none",
+                      background: "transparent",
+                      color: "var(--fg)",
+                      fontSize: 15,
+                      fontFamily: "inherit",
+                    }}
+                  />
+                </div>
+              )}
+            </Field>
             <label
               style={{
                 display: "flex",

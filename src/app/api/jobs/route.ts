@@ -61,6 +61,14 @@ export async function POST(request: Request) {
   const countryCode = optionalString(raw.countryCode);
   const currency = isCurrency(raw.currency) ? raw.currency : "USD";
 
+  const hardSkills = Array.isArray(raw.hardSkills)
+    ? raw.hardSkills
+        .filter((x): x is string => typeof x === "string")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+        .slice(0, 30)
+    : [];
+
   const [created] = await db
     .insert(jobs)
     .values({
@@ -75,6 +83,9 @@ export async function POST(request: Request) {
       salaryMin: optionalInt(raw.salaryMin),
       salaryMax: optionalInt(raw.salaryMax),
       currency,
+      hardSkills,
+      experienceMin: optionalInt(raw.experienceMin),
+      industry: optionalString(raw.industry),
       status,
     })
     .returning({ id: jobs.id });

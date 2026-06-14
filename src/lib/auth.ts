@@ -98,6 +98,7 @@ export async function getCurrentSession(): Promise<SessionPayload | null> {
 
 export function homeForRole(role: SessionRole): string {
   if (role === "candidate") return "/candidato";
+  if (role === "admin") return "/admin/candidatos";
   return "/empresa";
 }
 

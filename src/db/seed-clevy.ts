@@ -21,6 +21,8 @@ async function hashPassword(password: string): Promise<string> {
 
 const DEMO_MANAGER_EMAIL = "manager@linea.demo";
 const DEMO_MANAGER_PASSWORD = "password123";
+const DEMO_ADMIN_EMAIL = "admin@clevy.demo";
+const DEMO_ADMIN_PASSWORD = "password123";
 
 const DEMO_CULTURE_META = {
   selected: ["autonomy", "experiment", "collab", "focus", "direct"],
@@ -562,6 +564,27 @@ async function main() {
     .where(eq(schema.companies.slug, "linea"))
     .limit(1);
   if (linea) await seedManagerPipeline(linea.id);
+
+  // Headhunting/admin user (uploads candidates via CSV).
+  const [existingAdmin] = await db
+    .select({ id: schema.users.id })
+    .from(schema.users)
+    .where(eq(schema.users.email, DEMO_ADMIN_EMAIL))
+    .limit(1);
+  if (!existingAdmin) {
+    const passwordHash = await hashPassword(DEMO_ADMIN_PASSWORD);
+    await db.insert(schema.users).values({
+      email: DEMO_ADMIN_EMAIL,
+      name: "Clevy Admin",
+      passwordHash,
+      role: "admin",
+    });
+  } else {
+    await db
+      .update(schema.users)
+      .set({ role: "admin" })
+      .where(eq(schema.users.id, existingAdmin.id));
+  }
   const [{ companyCount }] = await db
     .select({ companyCount: sql<number>`count(*)::int` })
     .from(schema.companies);
@@ -574,6 +597,7 @@ async function main() {
   console.log(
     `Demo HR manager: ${DEMO_MANAGER_EMAIL} / ${DEMO_MANAGER_PASSWORD}`
   );
+  console.log(`Demo admin:      ${DEMO_ADMIN_EMAIL} / ${DEMO_ADMIN_PASSWORD}`);
   await client.end();
 }
 

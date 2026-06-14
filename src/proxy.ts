@@ -12,6 +12,7 @@ type SessionPayload = {
 const ROLE_ROUTES: Record<string, SessionPayload["role"][]> = {
   "/empresa": ["recruiter", "hiring_manager", "admin"],
   "/candidato": ["candidate", "recruiter", "admin"],
+  "/admin": ["admin"],
   "/agente": ["admin"],
 };
 
@@ -80,6 +81,7 @@ export const config = {
   matcher: [
     "/empresa/:path*",
     "/candidato/:path*",
+    "/admin/:path*",
     "/agente/:path*",
     "/api/:path*",
   ],

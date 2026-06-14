@@ -11,6 +11,7 @@ import {
   listApplicantsForJob,
 } from "@/lib/company-db";
 import { formatLocation, formatSalary } from "@/lib/location";
+import { fmt } from "@/lib/fmt";
 import { JobStatusControl } from "./status-control";
 
 type Params = Promise<{ id: string }>;
@@ -137,6 +138,58 @@ export default async function VacanteDetailPage({
             >
               {job.description}
             </p>
+          ) : null}
+
+          {job.industry || job.experienceMin != null || job.hardSkills.length > 0 ? (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+                borderTop: "1px solid var(--hairline)",
+                paddingTop: 20,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: "var(--fg-dim)",
+                }}
+              >
+                {t.vacante.requirements}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 24,
+                  flexWrap: "wrap",
+                  fontSize: 14,
+                }}
+              >
+                {job.industry ? (
+                  <span>
+                    <span style={{ color: "var(--fg-dim)" }}>
+                      {t.vacante.industryLabel}:{" "}
+                    </span>
+                    {job.industry}
+                  </span>
+                ) : null}
+                {job.experienceMin != null ? (
+                  <span>{fmt(t.vacante.experienceValue, { n: job.experienceMin })}</span>
+                ) : null}
+              </div>
+              {job.hardSkills.length > 0 ? (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {job.hardSkills.map((s) => (
+                    <Tag key={s} tone="accent">
+                      {s}
+                    </Tag>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           ) : null}
 
           <div>

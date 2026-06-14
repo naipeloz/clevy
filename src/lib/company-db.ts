@@ -42,6 +42,9 @@ export type JobRow = {
   salaryMin: number | null;
   salaryMax: number | null;
   currency: string;
+  hardSkills: string[];
+  experienceMin: number | null;
+  industry: string | null;
   status: "draft" | "open" | "paused" | "closed";
   applicantCount: number;
   createdAt: Date;
@@ -79,6 +82,12 @@ function fallbackAxes(): AxisValues {
   const fallback: Partial<AxisValues> = {};
   for (const a of CULTURAL_AXES) fallback[a.id] = 50;
   return fallback as AxisValues;
+}
+
+function toStringArray(raw: unknown): string[] {
+  return Array.isArray(raw)
+    ? raw.filter((x): x is string => typeof x === "string")
+    : [];
 }
 
 export async function getCompanyForUser(
@@ -182,6 +191,9 @@ export async function listJobsForCompany(
       salaryMin: jobsTable.salaryMin,
       salaryMax: jobsTable.salaryMax,
       currency: jobsTable.currency,
+      hardSkills: jobsTable.hardSkills,
+      experienceMin: jobsTable.experienceMin,
+      industry: jobsTable.industry,
       status: jobsTable.status,
       createdAt: jobsTable.createdAt,
     })
@@ -202,8 +214,24 @@ export async function listJobsForCompany(
 
   return jobRows.map((j) => ({
     ...j,
+    hardSkills: toStringArray(j.hardSkills),
     applicantCount: counts.get(j.id) ?? 0,
   }));
+}
+
+// Admin: every vacancy across companies (for the CSV candidate upload tool).
+export async function listAllJobs(): Promise<
+  { id: string; title: string; company: string }[]
+> {
+  return db
+    .select({
+      id: jobsTable.id,
+      title: jobsTable.title,
+      company: companiesTable.name,
+    })
+    .from(jobsTable)
+    .innerJoin(companiesTable, eq(jobsTable.companyId, companiesTable.id))
+    .orderBy(companiesTable.name, jobsTable.title);
 }
 
 export async function getJobForCompany(
@@ -222,6 +250,9 @@ export async function getJobForCompany(
       salaryMin: jobsTable.salaryMin,
       salaryMax: jobsTable.salaryMax,
       currency: jobsTable.currency,
+      hardSkills: jobsTable.hardSkills,
+      experienceMin: jobsTable.experienceMin,
+      industry: jobsTable.industry,
       status: jobsTable.status,
       companyId: jobsTable.companyId,
       createdAt: jobsTable.createdAt,
@@ -231,7 +262,7 @@ export async function getJobForCompany(
     .limit(1);
 
   if (!j || j.companyId !== companyId) return null;
-  return { ...j, applicantCount: 0 };
+  return { ...j, hardSkills: toStringArray(j.hardSkills), applicantCount: 0 };
 }
 
 export async function listApplicantsForJob(
