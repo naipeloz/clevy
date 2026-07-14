@@ -31,6 +31,56 @@ export const en: Dict = {
     stat3: "roles: company and candidate",
   },
   roleToggle: { candidate: "I'm a candidate", company: "I'm a company" },
+  landing: {
+    signIn: "Sign in",
+    haveAccount: "I already have an account",
+    candidate: {
+      eyebrow: "Culture as the matching criterion",
+      headPre: "Work where you",
+      headEm: "truly",
+      headPost: " fit.",
+      lead:
+        "Clevy measures what you value in a work environment and connects you with companies whose culture is aligned. No more accepting offers and quitting three months in.",
+      cta: "Build my profile",
+    },
+    company: {
+      eyebrow: "Culture as the matching criterion",
+      headPre: "Hire for",
+      headEm: "culture fit",
+      headPost: ", not just a résumé.",
+      lead:
+        "Define your culture concretely and measurably. Get candidates who fit how your team works — cut early turnover from day one.",
+      cta: "Define our culture",
+    },
+    stat1: "min to complete",
+    stat2: "cultural dimensions",
+    stat3: "ways to complete",
+    matchExample: "Sample match",
+    matchLabel: "match",
+    axes: {
+      autonomy: { left: "Autonomy", right: "Structure" },
+      pace: { left: "Calm pace", right: "Intense pace" },
+      focus: { left: "Individual focus", right: "Teamwork" },
+      location: { left: "Remote", right: "On-site" },
+      risk: { left: "Cautious", right: "Experimental" },
+    },
+    howEyebrow: "How it works",
+    howTitle: "Three steps. Zero résumés.",
+    steps: [
+      {
+        title: "Build your profile",
+        desc: "Answer a guided questionnaire or chat with the agent. In under 10 minutes we have a quantified cultural profile.",
+      },
+      {
+        title: "Get matches",
+        desc: "We show you companies whose culture fits what you're looking for. You see the affinity percentage and the axes where you align.",
+      },
+      {
+        title: "You decide",
+        desc: "Review each match in detail — values, team, pace. Only companies that truly fit reach out to you.",
+      },
+    ],
+  },
   auth: {
     fieldEmail: "Email",
     fieldPassword: "Password",

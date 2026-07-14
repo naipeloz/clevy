@@ -3,41 +3,27 @@
 import Link from "next/link";
 import { useState } from "react";
 import { BrandLockup } from "@/components/brand";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { useT } from "@/components/locale-provider";
 
 type Role = "candidate" | "company";
 
-const HEADLINES: Record<
-  Role,
-  { eyebrow: string; tail: string; lead: string; cta: string }
-> = {
-  candidate: {
-    eyebrow: "Cultura como criterio de match",
-    tail: "de verdad",
-    lead:
-      "Clevy mide lo que valoras en un entorno de trabajo y te conecta con empresas cuya cultura está alineada. No más aceptar ofertas y renunciar a los tres meses.",
-    cta: "Construir mi perfil",
-  },
-  company: {
-    eyebrow: "Cultura como criterio de match",
-    tail: "fit cultural",
-    lead:
-      "Define tu cultura de forma concreta y medible. Recibe candidatos que encajan en cómo trabaja tu equipo — reducí rotación temprana desde el día uno.",
-    cta: "Definir nuestra cultura",
-  },
-};
-
-const AXES = [
-  { left: "Autonomía", right: "Estructura", a: 62, b: 58 },
-  { left: "Ritmo pausado", right: "Ritmo intenso", a: 78, b: 82 },
-  { left: "Foco individual", right: "Trabajo en equipo", a: 70, b: 74 },
-  { left: "Remoto", right: "Presencial", a: 30, b: 25 },
-  { left: "Cauto", right: "Experimental", a: 68, b: 72 },
-];
+// Marker positions for the sample-match visual (candidate vs. company dots).
+// The axis labels themselves come from the translation dictionary.
+const AXIS_POSITIONS = [
+  { key: "autonomy", a: 62, b: 58 },
+  { key: "pace", a: 78, b: 82 },
+  { key: "focus", a: 70, b: 74 },
+  { key: "location", a: 30, b: 25 },
+  { key: "risk", a: 68, b: 72 },
+] as const;
 
 export function LandingClient() {
+  const t = useT();
   const [role, setRole] = useState<Role>("candidate");
-  const copy = HEADLINES[role];
+  const copy = t.landing[role];
   const signupHref = `/signup?role=${role}`;
+  const axes = AXIS_POSITIONS.map((p) => ({ ...p, ...t.landing.axes[p.key] }));
 
   return (
     <div
@@ -62,7 +48,7 @@ export function LandingClient() {
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div
             role="tablist"
-            aria-label="Seleccionar rol"
+            aria-label={t.landing.candidate.eyebrow}
             style={{
               display: "flex",
               alignItems: "center",
@@ -90,11 +76,12 @@ export function LandingClient() {
                     cursor: "pointer",
                   }}
                 >
-                  {r === "candidate" ? "Soy candidato" : "Soy empresa"}
+                  {t.roleToggle[r]}
                 </button>
               );
             })}
           </div>
+          <LanguageSwitcher />
           <Link
             href="/login"
             style={{
@@ -104,7 +91,7 @@ export function LandingClient() {
               textUnderlineOffset: 3,
             }}
           >
-            Iniciar sesión
+            {t.landing.signIn}
           </Link>
         </div>
       </header>
@@ -139,20 +126,10 @@ export function LandingClient() {
               fontWeight: 400,
             }}
           >
-            {role === "candidate" ? (
-              <>
-                Trabajar donde
-                <br />
-                <em style={{ color: "var(--accent)" }}>{copy.tail}</em> encajas.
-              </>
-            ) : (
-              <>
-                Contratar por
-                <br />
-                <em style={{ color: "var(--accent)" }}>{copy.tail}</em>, no
-                solo CV.
-              </>
-            )}
+            {copy.headPre}
+            <br />
+            <em style={{ color: "var(--accent)" }}>{copy.headEm}</em>
+            {copy.headPost}
           </h1>
           <p
             style={{
@@ -194,7 +171,7 @@ export function LandingClient() {
                 textUnderlineOffset: 3,
               }}
             >
-              Ya tengo cuenta
+              {t.landing.haveAccount}
             </Link>
           </div>
           <div
@@ -215,7 +192,7 @@ export function LandingClient() {
               >
                 7
               </strong>{" "}
-              min en completar
+              {t.landing.stat1}
             </div>
             <div>
               <strong
@@ -226,7 +203,7 @@ export function LandingClient() {
               >
                 12
               </strong>{" "}
-              dimensiones culturales
+              {t.landing.stat2}
             </div>
             <div>
               <strong
@@ -237,7 +214,7 @@ export function LandingClient() {
               >
                 2
               </strong>{" "}
-              formas de completar
+              {t.landing.stat3}
             </div>
           </div>
         </div>
@@ -269,7 +246,7 @@ export function LandingClient() {
                   marginBottom: 6,
                 }}
               >
-                Match ejemplo
+                {t.landing.matchExample}
               </div>
               <div
                 style={{
@@ -303,11 +280,11 @@ export function LandingClient() {
                   background: "var(--accent)",
                 }}
               />
-              94% match
+              94% {t.landing.matchLabel}
             </span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-            {AXES.map((axis) => (
+            {axes.map((axis) => (
               <div key={axis.left}>
                 <div
                   style={{
@@ -414,7 +391,7 @@ export function LandingClient() {
             marginBottom: 8,
           }}
         >
-          Cómo funciona
+          {t.landing.howEyebrow}
         </div>
         <h2
           style={{
@@ -426,7 +403,7 @@ export function LandingClient() {
             margin: 0,
           }}
         >
-          Tres pasos. Cero CVs.
+          {t.landing.howTitle}
         </h2>
         <div
           style={{
@@ -436,25 +413,9 @@ export function LandingClient() {
             marginTop: 48,
           }}
         >
-          {[
-            {
-              n: "01",
-              t: "Construye tu perfil",
-              d: "Responde un cuestionario guiado o conversa con el agente. En menos de 10 minutos tenemos un perfil cultural cuantificado.",
-            },
-            {
-              n: "02",
-              t: "Recibe matches",
-              d: "Te mostramos empresas cuya cultura encaja con lo que buscas. Ves el porcentaje de afinidad y los ejes donde coinciden.",
-            },
-            {
-              n: "03",
-              t: "Decides tú",
-              d: "Revisa cada match con detalle — valores, equipo, ritmo. Solo te contactan empresas que realmente encajan.",
-            },
-          ].map((s) => (
+          {t.landing.steps.map((step, i) => (
             <div
-              key={s.n}
+              key={step.title}
               style={{
                 borderTop: "1px solid var(--fg)",
                 paddingTop: 20,
@@ -470,7 +431,7 @@ export function LandingClient() {
                   color: "var(--accent)",
                 }}
               >
-                {s.n}
+                {String(i + 1).padStart(2, "0")}
               </div>
               <div
                 style={{
@@ -478,7 +439,7 @@ export function LandingClient() {
                   fontFamily: "var(--font-instrument-serif), serif",
                 }}
               >
-                {s.t}
+                {step.title}
               </div>
               <div
                 style={{
@@ -487,7 +448,7 @@ export function LandingClient() {
                   color: "var(--fg-dim)",
                 }}
               >
-                {s.d}
+                {step.desc}
               </div>
             </div>
           ))}

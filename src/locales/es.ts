@@ -29,6 +29,56 @@ export const es = {
     stat3: "roles: empresa y candidato",
   },
   roleToggle: { candidate: "Soy candidato", company: "Soy empresa" },
+  landing: {
+    signIn: "Iniciar sesión",
+    haveAccount: "Ya tengo cuenta",
+    candidate: {
+      eyebrow: "Cultura como criterio de match",
+      headPre: "Trabajar donde",
+      headEm: "de verdad",
+      headPost: " encajas.",
+      lead:
+        "Clevy mide lo que valoras en un entorno de trabajo y te conecta con empresas cuya cultura está alineada. No más aceptar ofertas y renunciar a los tres meses.",
+      cta: "Construir mi perfil",
+    },
+    company: {
+      eyebrow: "Cultura como criterio de match",
+      headPre: "Contratar por",
+      headEm: "fit cultural",
+      headPost: ", no solo CV.",
+      lead:
+        "Define tu cultura de forma concreta y medible. Recibe candidatos que encajan en cómo trabaja tu equipo — reducí rotación temprana desde el día uno.",
+      cta: "Definir nuestra cultura",
+    },
+    stat1: "min en completar",
+    stat2: "dimensiones culturales",
+    stat3: "formas de completar",
+    matchExample: "Match ejemplo",
+    matchLabel: "match",
+    axes: {
+      autonomy: { left: "Autonomía", right: "Estructura" },
+      pace: { left: "Ritmo pausado", right: "Ritmo intenso" },
+      focus: { left: "Foco individual", right: "Trabajo en equipo" },
+      location: { left: "Remoto", right: "Presencial" },
+      risk: { left: "Cauto", right: "Experimental" },
+    },
+    howEyebrow: "Cómo funciona",
+    howTitle: "Tres pasos. Cero CVs.",
+    steps: [
+      {
+        title: "Construye tu perfil",
+        desc: "Responde un cuestionario guiado o conversa con el agente. En menos de 10 minutos tenemos un perfil cultural cuantificado.",
+      },
+      {
+        title: "Recibe matches",
+        desc: "Te mostramos empresas cuya cultura encaja con lo que buscas. Ves el porcentaje de afinidad y los ejes donde coinciden.",
+      },
+      {
+        title: "Decides tú",
+        desc: "Revisa cada match con detalle — valores, equipo, ritmo. Solo te contactan empresas que realmente encajan.",
+      },
+    ],
+  },
   auth: {
     fieldEmail: "Email",
     fieldPassword: "Contraseña",
