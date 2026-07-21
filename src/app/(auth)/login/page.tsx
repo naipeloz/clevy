@@ -19,19 +19,31 @@ export default async function LoginPage() {
       title={<>{t.auth.login.title}</>}
       subtitle={t.auth.login.subtitle}
       footer={
-        <>
-          {t.auth.login.footerQuestion}{" "}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <Link
-            href="/signup"
+            href="/forgot-password"
             style={{
               color: "var(--fg)",
               textDecoration: "underline",
               textUnderlineOffset: 3,
             }}
           >
-            {t.auth.login.footerCta}
+            {t.auth.login.forgotCta}
           </Link>
-        </>
+          <span>
+            {t.auth.login.footerQuestion}{" "}
+            <Link
+              href="/signup"
+              style={{
+                color: "var(--fg)",
+                textDecoration: "underline",
+                textUnderlineOffset: 3,
+              }}
+            >
+              {t.auth.login.footerCta}
+            </Link>
+          </span>
+        </div>
       }
     >
       <LoginForm />

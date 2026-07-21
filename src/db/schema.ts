@@ -221,6 +221,17 @@ export const invitations = pgTable("invitations", {
   ...timestamps,
 });
 
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id),
+  token: varchar("token", { length: 64 }).notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+  ...timestamps,
+});
+
 // ---------- Relations ----------
 
 export const usersRelations = relations(users, ({ one }) => ({
@@ -229,6 +240,16 @@ export const usersRelations = relations(users, ({ one }) => ({
     references: [companies.id],
   }),
 }));
+
+export const passwordResetTokensRelations = relations(
+  passwordResetTokens,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [passwordResetTokens.userId],
+      references: [users.id],
+    }),
+  })
+);
 
 export const companiesRelations = relations(companies, ({ many, one }) => ({
   users: many(users),

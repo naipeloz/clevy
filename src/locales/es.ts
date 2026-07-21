@@ -94,6 +94,30 @@ export const es = {
       footerCta: "Crear cuenta",
       submit: "Entrar",
       error: "No se pudo iniciar sesión",
+      forgotCta: "¿Olvidaste tu contraseña?",
+    },
+    forgot: {
+      eyebrow: "Recuperar acceso",
+      title: "¿Olvidaste tu contraseña?",
+      subtitle:
+        "Ingresá tu email y te enviaremos un enlace para elegir una nueva contraseña.",
+      submit: "Enviar enlace",
+      error: "No se pudo enviar el enlace",
+      success:
+        "Si existe una cuenta con ese email, te enviamos un enlace para restablecer tu contraseña. Revisá tu bandeja de entrada.",
+      backToLogin: "Volver a iniciar sesión",
+    },
+    reset: {
+      eyebrow: "Nueva contraseña",
+      title: "Elegí una nueva contraseña.",
+      subtitle: "Ingresá la nueva contraseña para tu cuenta.",
+      fieldPassword: "Nueva contraseña",
+      submit: "Guardar contraseña",
+      error: "No se pudo restablecer la contraseña",
+      success: "Tu contraseña se actualizó. Ya podés iniciar sesión.",
+      missingToken:
+        "El enlace es inválido o expiró. Pedí uno nuevo desde la pantalla de inicio de sesión.",
+      backToLogin: "Volver a iniciar sesión",
     },
     signup: {
       eyebrowCreate: "Crear cuenta",

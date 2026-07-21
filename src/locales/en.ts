@@ -96,6 +96,30 @@ export const en: Dict = {
       footerCta: "Create account",
       submit: "Sign in",
       error: "Could not sign in",
+      forgotCta: "Forgot your password?",
+    },
+    forgot: {
+      eyebrow: "Recover access",
+      title: "Forgot your password?",
+      subtitle:
+        "Enter your email and we'll send you a link to choose a new password.",
+      submit: "Send link",
+      error: "Could not send the link",
+      success:
+        "If an account exists for that email, we've sent a link to reset your password. Check your inbox.",
+      backToLogin: "Back to sign in",
+    },
+    reset: {
+      eyebrow: "New password",
+      title: "Choose a new password.",
+      subtitle: "Enter the new password for your account.",
+      fieldPassword: "New password",
+      submit: "Save password",
+      error: "Could not reset the password",
+      success: "Your password was updated. You can sign in now.",
+      missingToken:
+        "This link is invalid or expired. Request a new one from the sign-in screen.",
+      backToLogin: "Back to sign in",
     },
     signup: {
       eyebrowCreate: "Create account",
