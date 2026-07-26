@@ -1,10 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ClevyMark } from "@/components/brand";
-import { ProgressBar } from "@/components/ui";
 import { LocationPicker } from "@/components/location-picker";
 import { useT } from "@/components/locale-provider";
 import {
@@ -72,59 +69,7 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        background: "var(--bg)",
-      }}
-    >
-      <header
-        style={{
-          padding: "20px 48px",
-          borderBottom: "1px solid var(--hairline)",
-          display: "flex",
-          alignItems: "center",
-          gap: 20,
-        }}
-      >
-        <ClevyMark size={24} />
-        <div style={{ flex: 1 }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 8,
-              fontSize: 12,
-              color: "var(--fg-dim)",
-            }}
-          >
-            <span>{isEdit ? t.perfilCompany.headerEdit : t.perfilCompany.headerCreate}</span>
-            {!isEdit ? (
-              <span style={{ fontVariantNumeric: "tabular-nums" }}>
-                {t.perfilCompany.step1of3}
-              </span>
-            ) : null}
-          </div>
-          <ProgressBar value={isEdit ? 3 : 1} total={3} />
-        </div>
-        {isEdit ? (
-          <Link
-            href="/empresa"
-            style={{
-              fontSize: 13,
-              color: "var(--fg-dim)",
-              textDecoration: "underline",
-              textUnderlineOffset: 3,
-            }}
-          >
-            {t.common.exit}
-          </Link>
-        ) : null}
-      </header>
-
-      <main style={{ flex: 1, overflow: "auto", padding: "48px 64px" }}>
+    <div style={{ padding: "40px 64px 80px", overflow: "auto", height: "100%" }}>
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
           <div
             style={{
@@ -213,7 +158,6 @@ export function PerfilClient({ initial }: { initial: CompanyFields | null }) {
             </SubmitButton>
           </form>
         </div>
-      </main>
     </div>
   );
 }

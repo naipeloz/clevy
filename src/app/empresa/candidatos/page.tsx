@@ -2,8 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentSession, isManager } from "@/lib/auth";
 import { getDict } from "@/lib/i18n";
-import { AppHeader } from "@/components/app-header";
-import { Avatar, ReadOnlyBanner, Tag } from "@/components/ui";
+import { Avatar, Tag } from "@/components/ui";
+import { CompanyShell } from "@/components/company/company-shell";
+import { Page } from "@/components/admin/admin-ui";
 import { listCandidatesScored } from "@/lib/clevy-db";
 import {
   getCompanyForUser,
@@ -25,7 +26,7 @@ export default async function CompanyDashboardPage({
 
   const session = await getCurrentSession();
   if (!session) redirect("/login");
-  if (session.role === "candidate") redirect("/candidato");
+  if (session.role === "user") redirect("/candidato");
 
   const t = await getDict();
   const manager = isManager(session.role);
@@ -65,32 +66,13 @@ export default async function CompanyDashboardPage({
     scored.reduce((s, c) => s + c.match, 0) / Math.max(1, scored.length);
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "var(--bg)",
-      }}
+    <CompanyShell
+      userName={company.name}
+      companyName={company.name}
+      manager={manager}
+      readOnlyMessage={t.ui.readOnlyDefault}
     >
-      <AppHeader userName={company.name} />
-      {!manager ? <ReadOnlyBanner message={t.ui.readOnlyDefault} /> : null}
-      <main
-        style={{
-          flex: 1,
-          padding: "40px 64px 80px",
-          overflow: "auto",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1240,
-            margin: "0 auto",
-            display: "flex",
-            flexDirection: "column",
-            gap: 32,
-          }}
-        >
+      <Page max={1240}>
           <div
             style={{
               display: "grid",
@@ -311,8 +293,7 @@ export default async function CompanyDashboardPage({
               ))
             )}
           </div>
-        </div>
-      </main>
-    </div>
+      </Page>
+    </CompanyShell>
   );
 }

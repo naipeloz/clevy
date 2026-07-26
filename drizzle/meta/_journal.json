@@ -57,6 +57,20 @@
       "when": 1784560037482,
       "tag": "0007_worried_cobalt_man",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1785100332158,
+      "tag": "0008_secret_hiroim",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1785101749221,
+      "tag": "0009_mixed_bucky",
+      "breakpoints": true
     }
   ]
 }

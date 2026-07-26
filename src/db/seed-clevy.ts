@@ -475,7 +475,7 @@ async function seedManagerPipeline(lineaId: string) {
     managerId = existingManager.id;
     await db
       .update(schema.users)
-      .set({ companyId: lineaId, role: "hiring_manager" })
+      .set({ companyId: lineaId, role: "admin" })
       .where(eq(schema.users.id, managerId));
   } else {
     const passwordHash = await hashPassword(DEMO_MANAGER_PASSWORD);
@@ -485,7 +485,7 @@ async function seedManagerPipeline(lineaId: string) {
         email: DEMO_MANAGER_EMAIL,
         name: "Ana — HR Manager",
         passwordHash,
-        role: "hiring_manager",
+        role: "admin",
         companyId: lineaId,
       })
       .returning({ id: schema.users.id });
@@ -577,12 +577,12 @@ async function main() {
       email: DEMO_ADMIN_EMAIL,
       name: "Clevy Admin",
       passwordHash,
-      role: "admin",
+      role: "root",
     });
   } else {
     await db
       .update(schema.users)
-      .set({ role: "admin" })
+      .set({ role: "root" })
       .where(eq(schema.users.id, existingAdmin.id));
   }
   const [{ companyCount }] = await db

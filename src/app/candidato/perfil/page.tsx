@@ -16,7 +16,7 @@ function describeIndex(v: number): 0 | 1 | 2 {
 export default async function PerfilPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
-  if (session.role !== "candidate") redirect("/empresa");
+  if (session.role !== "user") redirect("/empresa");
 
   const t = await getDict();
 

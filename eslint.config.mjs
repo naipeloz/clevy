@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Conductor scratch dir (design handoffs, agent collaboration files).
+    ".context/**",
   ]),
 ]);
 

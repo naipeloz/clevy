@@ -13,11 +13,8 @@ const SCRYPT_KEYLEN = 64;
 const SESSION_COOKIE = "session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 
-export type SessionRole =
-  | "admin"
-  | "recruiter"
-  | "hiring_manager"
-  | "candidate";
+// root = super admin (platform), admin = company admin, user = candidate/applicant.
+export type SessionRole = "root" | "admin" | "user";
 
 export type SessionPayload = {
   userId: string;
@@ -97,13 +94,12 @@ export async function getCurrentSession(): Promise<SessionPayload | null> {
 }
 
 export function homeForRole(role: SessionRole): string {
-  if (role === "candidate") return "/candidato";
-  if (role === "admin") return "/admin/candidatos";
+  if (role === "user") return "/candidato";
+  if (role === "root") return "/admin";
   return "/empresa";
 }
 
-// HR manager (full control over the company) vs HR support (read-only).
-// hiring_manager = HR manager, recruiter = HR support, admin = superuser.
+// Whether the role can manage a company (company admin or platform super admin).
 export function isManager(role: SessionRole): boolean {
-  return role === "hiring_manager" || role === "admin";
+  return role === "admin" || role === "root";
 }

@@ -83,6 +83,17 @@ export function LandingClient() {
           </div>
           <LanguageSwitcher />
           <Link
+            href="/busquedas"
+            style={{
+              fontSize: 13,
+              color: "var(--fg)",
+              textDecoration: "underline",
+              textUnderlineOffset: 3,
+            }}
+          >
+            {t.publicJobs.eyebrow}
+          </Link>
+          <Link
             href="/login"
             style={{
               fontSize: 13,

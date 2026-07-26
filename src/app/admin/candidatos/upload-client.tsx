@@ -62,7 +62,7 @@ export function UploadClient({ jobs }: { jobs: Job[] }) {
   }
 
   return (
-    <main style={{ flex: 1, padding: "40px 64px 80px", overflow: "auto" }}>
+    <div style={{ padding: "40px 64px 80px", overflow: "auto", height: "100%" }}>
       <div
         style={{
           maxWidth: 760,
@@ -218,7 +218,7 @@ export function UploadClient({ jobs }: { jobs: Job[] }) {
           {pending ? "Procesando…" : "Cargar candidatos"}
         </button>
       </div>
-    </main>
+    </div>
   );
 }
 

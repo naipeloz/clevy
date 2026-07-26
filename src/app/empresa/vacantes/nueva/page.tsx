@@ -6,7 +6,7 @@ import { NuevaVacanteClient } from "./nueva-client";
 export default async function NuevaVacantePage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
-  if (session.role === "candidate") redirect("/candidato");
+  if (session.role === "user") redirect("/candidato");
   if (!isManager(session.role)) redirect("/empresa");
 
   const company = await getCompanyForUser(session.userId);

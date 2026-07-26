@@ -4,12 +4,13 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { getCurrentSession, isManager } from "@/lib/auth";
 import { getCompanyForUser, getCompanyCultureMeta } from "@/lib/company-db";
+import { CompanyShell } from "@/components/company/company-shell";
 import { CulturaClient } from "./cultura-client";
 
 export default async function CulturaPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
-  if (session.role === "candidate") redirect("/candidato");
+  if (session.role === "user") redirect("/candidato");
   // Only the HR manager defines the company culture.
   if (!isManager(session.role)) redirect("/empresa");
 
@@ -25,10 +26,15 @@ export default async function CulturaPage() {
   const meta = await getCompanyCultureMeta(company.id);
 
   return (
-    <CulturaClient
+    <CompanyShell
       userName={user?.name ?? company.name}
-      initialSelected={meta?.selected ?? null}
-      initialPriorities={meta?.priorities ?? null}
-    />
+      companyName={company.name}
+      manager
+    >
+      <CulturaClient
+        initialSelected={meta?.selected ?? null}
+        initialPriorities={meta?.priorities ?? null}
+      />
+    </CompanyShell>
   );
 }

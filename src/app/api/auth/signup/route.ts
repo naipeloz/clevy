@@ -10,9 +10,9 @@ import {
   type SessionRole,
 } from "@/lib/auth";
 
-// Roles a user can pick when self-registering. HR support (recruiter) is only
-// created by accepting an invitation, never via open signup.
-const SELF_SIGNUP_ROLES = new Set<SessionRole>(["candidate", "hiring_manager"]);
+// Roles a user can pick when self-registering: an applicant (user) or a
+// company admin (admin). Platform root is never created via open signup.
+const SELF_SIGNUP_ROLES = new Set<SessionRole>(["user", "admin"]);
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -87,8 +87,8 @@ export async function POST(request: Request) {
       );
     }
     finalRole = inv.role;
-    // A candidate is not an employee of the inviting company — don't link them.
-    companyId = inv.role === "candidate" ? null : inv.companyId;
+    // A candidate (user) is not an employee of the inviting company — don't link them.
+    companyId = inv.role === "user" ? null : inv.companyId;
     invitationId = inv.id;
   } else {
     if (!role || !SELF_SIGNUP_ROLES.has(role as SessionRole)) {

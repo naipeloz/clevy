@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentSession, isManager } from "@/lib/auth";
 import { getDict } from "@/lib/i18n";
-import { AppHeader } from "@/components/app-header";
-import { ReadOnlyBanner } from "@/components/ui";
+import { CompanyShell } from "@/components/company/company-shell";
 import {
   getCompanyForUser,
   listInvitations,
@@ -13,7 +12,7 @@ import { EquipoClient } from "./equipo-client";
 export default async function EquipoPage() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
-  if (session.role === "candidate") redirect("/candidato");
+  if (session.role === "user") redirect("/candidato");
   // Managers and HR support can both reach this page; support gets a reduced
   // view (only candidate invitations).
   const manager = isManager(session.role);
@@ -27,10 +26,9 @@ export default async function EquipoPage() {
     listInvitations(company.id),
   ]);
 
-  // Support only sees the candidate invitations it can manage.
   const visibleInvites = manager
     ? invites
-    : invites.filter((i) => i.role === "candidate");
+    : invites.filter((i) => i.role === "user");
 
   const pending = visibleInvites
     .filter((i) => i.status === "pending")
@@ -38,30 +36,26 @@ export default async function EquipoPage() {
       id: i.id,
       email: i.email,
       token: i.token,
-      role: i.role === "candidate" ? ("candidate" as const) : ("support" as const),
+      role: i.role === "user" ? ("candidate" as const) : ("support" as const),
     }));
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "var(--bg)",
-      }}
+    <CompanyShell
+      userName={company.name}
+      companyName={company.name}
+      manager={manager}
+      readOnlyMessage={t.ui.readOnlySupportInvite}
     >
-      <AppHeader userName={company.name} />
-      {!manager ? <ReadOnlyBanner message={t.ui.readOnlySupportInvite} /> : null}
       <EquipoClient
         manager={manager}
         members={members.map((m) => ({
           id: m.id,
           name: m.name,
           email: m.email,
-          isManager: m.role === "hiring_manager" || m.role === "admin",
+          isManager: m.role === "admin" || m.role === "root",
         }))}
         pending={pending}
       />
-    </div>
+    </CompanyShell>
   );
 }

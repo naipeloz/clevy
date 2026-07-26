@@ -1,10 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ClevyMark } from "@/components/brand";
-import { ProgressBar } from "@/components/ui";
 import { useT } from "@/components/locale-provider";
 import { fmt } from "@/lib/fmt";
 import { COMPANY_VALUES_OPTIONS } from "@/lib/clevy-data";
@@ -19,11 +16,9 @@ const DEFAULT_PRIORITIES: Record<string, number> = {
 };
 
 export function CulturaClient({
-  userName,
   initialSelected,
   initialPriorities,
 }: {
-  userName: string;
   initialSelected: string[] | null;
   initialPriorities: Record<string, number> | null;
 }) {
@@ -82,61 +77,7 @@ export function CulturaClient({
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        background: "var(--bg)",
-      }}
-    >
-      <header
-        style={{
-          padding: "20px 48px",
-          borderBottom: "1px solid var(--hairline)",
-          display: "flex",
-          alignItems: "center",
-          gap: 20,
-        }}
-      >
-        <ClevyMark size={24} />
-        <div style={{ flex: 1 }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 8,
-              fontSize: 12,
-              color: "var(--fg-dim)",
-            }}
-          >
-            <span>{t.cultura.defining} · {userName}</span>
-            <span style={{ fontVariantNumeric: "tabular-nums" }}>
-              {t.cultura.step2of3}
-            </span>
-          </div>
-          <ProgressBar value={2} total={3} />
-        </div>
-        <Link
-          href="/empresa"
-          style={{
-            fontSize: 13,
-            color: "var(--fg-dim)",
-            textDecoration: "underline",
-            textUnderlineOffset: 3,
-          }}
-        >
-          {t.common.exit}
-        </Link>
-      </header>
-
-      <main
-        style={{
-          flex: 1,
-          overflow: "auto",
-          padding: "48px 64px 32px",
-        }}
-      >
+    <div style={{ padding: "40px 64px 80px", overflow: "auto", height: "100%" }}>
         <div
           style={{
             maxWidth: 1040,
@@ -381,11 +322,10 @@ export function CulturaClient({
             </div>
           ) : null}
         </div>
-      </main>
 
       <div
         style={{
-          padding: "20px 48px",
+          padding: "20px 0 0",
           borderTop: "1px solid var(--hairline)",
           display: "flex",
           justifyContent: "space-between",

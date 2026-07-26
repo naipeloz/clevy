@@ -48,7 +48,7 @@ export function SignupForm({
             name,
             password,
             // "company" self-signup becomes the HR manager (hiring_manager).
-            role: role === "company" ? "hiring_manager" : "candidate",
+            role: role === "company" ? "admin" : "user",
           };
       const res = await fetch("/api/auth/signup", {
         method: "POST",

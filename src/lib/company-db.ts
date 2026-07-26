@@ -47,6 +47,8 @@ export type JobRow = {
   industry: string | null;
   status: "draft" | "open" | "paused" | "closed";
   applicantCount: number;
+  avgMatch: number | null;
+  newCount: number;
   createdAt: Date;
 };
 
@@ -66,7 +68,7 @@ export type InvitationRow = {
   id: string;
   email: string;
   token: string;
-  role: "admin" | "recruiter" | "hiring_manager" | "candidate";
+  role: "root" | "admin" | "user";
   status: "pending" | "accepted" | "revoked";
   createdAt: Date;
 };
@@ -75,7 +77,7 @@ export type TeamMember = {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "recruiter" | "hiring_manager" | "candidate";
+  role: "root" | "admin" | "user";
 };
 
 function fallbackAxes(): AxisValues {
@@ -205,17 +207,24 @@ export async function listJobsForCompany(
 
   const ids = jobRows.map((j) => j.id);
   const countRows = await db
-    .select({ jobId: matchesTable.jobId, n: sql<number>`count(*)::int` })
+    .select({
+      jobId: matchesTable.jobId,
+      n: sql<number>`count(*)::int`,
+      avg: sql<number | null>`cast(round(avg(${matchesTable.score})) as int)`,
+      newN: sql<number>`cast(count(*) filter (where ${matchesTable.status} = 'pending') as int)`,
+    })
     .from(matchesTable)
     .where(inArray(matchesTable.jobId, ids))
     .groupBy(matchesTable.jobId);
 
-  const counts = new Map(countRows.map((c) => [c.jobId, c.n]));
+  const stats = new Map(countRows.map((c) => [c.jobId, c]));
 
   return jobRows.map((j) => ({
     ...j,
     hardSkills: toStringArray(j.hardSkills),
-    applicantCount: counts.get(j.id) ?? 0,
+    applicantCount: stats.get(j.id)?.n ?? 0,
+    avgMatch: stats.get(j.id)?.avg ?? null,
+    newCount: stats.get(j.id)?.newN ?? 0,
   }));
 }
 
@@ -262,7 +271,21 @@ export async function getJobForCompany(
     .limit(1);
 
   if (!j || j.companyId !== companyId) return null;
-  return { ...j, hardSkills: toStringArray(j.hardSkills), applicantCount: 0 };
+  const [agg] = await db
+    .select({
+      n: sql<number>`count(*)::int`,
+      avg: sql<number | null>`cast(round(avg(${matchesTable.score})) as int)`,
+      newN: sql<number>`cast(count(*) filter (where ${matchesTable.status} = 'pending') as int)`,
+    })
+    .from(matchesTable)
+    .where(eq(matchesTable.jobId, jobId));
+  return {
+    ...j,
+    hardSkills: toStringArray(j.hardSkills),
+    applicantCount: agg?.n ?? 0,
+    avgMatch: agg?.avg ?? null,
+    newCount: agg?.newN ?? 0,
+  };
 }
 
 export async function listApplicantsForJob(

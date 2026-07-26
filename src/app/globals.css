@@ -71,3 +71,28 @@ button:hover:not(:disabled) {
 .fade-in {
   animation: fadeIn 400ms ease both;
 }
+
+/* Sidebar nav item (admin shell) */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--fg-dim);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.sidebar-item:hover {
+  background: var(--bg-2);
+  color: var(--fg);
+}
+
+.sidebar-item.active {
+  background: var(--bg-2);
+  color: var(--fg);
+  font-weight: 500;
+}

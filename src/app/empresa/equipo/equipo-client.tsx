@@ -13,7 +13,7 @@ import {
 } from "@/app/(auth)/form-controls";
 
 type Member = { id: string; name: string; email: string; isManager: boolean };
-type InviteRole = "recruiter" | "candidate";
+type InviteRole = "admin" | "candidate";
 type Pending = {
   id: string;
   email: string;
@@ -40,7 +40,7 @@ export function EquipoClient({
   const [email, setEmail] = useState("");
   // Support can only invite candidates; managers default to inviting support.
   const [role, setRole] = useState<InviteRole>(
-    manager ? "recruiter" : "candidate"
+    manager ? "admin" : "candidate"
   );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -93,7 +93,7 @@ export function EquipoClient({
   }
 
   return (
-    <main style={{ flex: 1, padding: "40px 64px 80px", overflow: "auto" }}>
+    <div style={{ padding: "40px 64px 80px", overflow: "auto", height: "100%" }}>
       <div
         style={{
           maxWidth: 720,
@@ -161,7 +161,7 @@ export function EquipoClient({
                 >
                   {(
                     [
-                      ["recruiter", t.equipo.roleSupport],
+                      ["admin", t.equipo.roleSupport],
                       ["candidate", t.equipo.roleCandidate],
                     ] as const
                   ).map(([value, label]) => {
@@ -383,6 +383,6 @@ export function EquipoClient({
           </div>
         ) : null}
       </div>
-    </main>
+    </div>
   );
 }

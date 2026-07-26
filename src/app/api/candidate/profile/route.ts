@@ -7,7 +7,7 @@ import { CULTURAL_AXES, type AxisId } from "@/lib/clevy-data";
 
 export async function POST(request: Request) {
   const session = await getCurrentSession();
-  if (!session || session.role !== "candidate") {
+  if (!session || session.role !== "user") {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

@@ -2,8 +2,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentSession, isManager } from "@/lib/auth";
 import { getDict } from "@/lib/i18n";
-import { AppHeader } from "@/components/app-header";
 import { Avatar, ComparisonBar } from "@/components/ui";
+import { CompanyShell } from "@/components/company/company-shell";
 import { computeMatch, CULTURAL_AXES } from "@/lib/clevy-data";
 import { getCandidateBySlug } from "@/lib/clevy-db";
 import { getCompanyForUser, getOrgCultureAxes } from "@/lib/company-db";
@@ -21,7 +21,7 @@ export default async function CompanyCandidateDetailPage({
 
   const session = await getCurrentSession();
   if (!session) redirect("/login");
-  if (session.role === "candidate") redirect("/candidato");
+  if (session.role === "user") redirect("/candidato");
 
   const t = await getDict();
   const company = await getCompanyForUser(session.userId);
@@ -30,24 +30,16 @@ export default async function CompanyCandidateDetailPage({
 
   const companyAxes = await getOrgCultureAxes(company.id);
   const match = computeMatch(companyAxes, candidate.values);
+  const manager = isManager(session.role);
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "var(--bg)",
-      }}
+    <CompanyShell
+      userName={company.name}
+      companyName={company.name}
+      manager={manager}
+      readOnlyMessage={t.ui.readOnlyDefault}
     >
-      <AppHeader userName={company.name} />
-      <main
-        style={{
-          flex: 1,
-          padding: "32px 64px 80px",
-          overflow: "auto",
-        }}
-      >
+      <div style={{ padding: "32px 64px 80px", overflow: "auto", height: "100%" }}>
         <div
           style={{
             maxWidth: 1100,
@@ -412,7 +404,7 @@ export default async function CompanyCandidateDetailPage({
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </CompanyShell>
   );
 }

@@ -11,7 +11,7 @@ import { isCandidateProfile } from "@/lib/clevy-data";
 export default async function CandidatoHome() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
-  if (session.role !== "candidate") redirect("/empresa");
+  if (session.role !== "user") redirect("/empresa");
 
   const [user] = await db
     .select({ name: users.name, culturalProfile: users.culturalProfile })

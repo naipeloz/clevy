@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentSession, isManager } from "@/lib/auth";
 import { getDict, getLocale } from "@/lib/i18n";
-import { AppHeader } from "@/components/app-header";
-import { Avatar, MatchPill, ReadOnlyBanner, Tag } from "@/components/ui";
+import { Avatar, MatchPill, Tag } from "@/components/ui";
+import { CompanyShell } from "@/components/company/company-shell";
+import { Page } from "@/components/admin/admin-ui";
 import {
   getCompanyForUser,
   getJobForCompany,
@@ -25,7 +26,7 @@ export default async function VacanteDetailPage({
 
   const session = await getCurrentSession();
   if (!session) redirect("/login");
-  if (session.role === "candidate") redirect("/candidato");
+  if (session.role === "user") redirect("/candidato");
 
   const t = await getDict();
   const locale = await getLocale();
@@ -50,26 +51,13 @@ export default async function VacanteDetailPage({
   );
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "var(--bg)",
-      }}
+    <CompanyShell
+      userName={company.name}
+      companyName={company.name}
+      manager={manager}
+      readOnlyMessage={t.ui.readOnlyDefault}
     >
-      <AppHeader userName={company.name} />
-      {!manager ? <ReadOnlyBanner message={t.ui.readOnlyDefault} /> : null}
-      <main style={{ flex: 1, padding: "40px 64px 80px", overflow: "auto" }}>
-        <div
-          style={{
-            maxWidth: 1040,
-            margin: "0 auto",
-            display: "flex",
-            flexDirection: "column",
-            gap: 32,
-          }}
-        >
+      <Page max={1040}>
           <Link
             href="/empresa"
             style={{
@@ -259,8 +247,7 @@ export default async function VacanteDetailPage({
               </div>
             )}
           </div>
-        </div>
-      </main>
-    </div>
+      </Page>
+    </CompanyShell>
   );
 }

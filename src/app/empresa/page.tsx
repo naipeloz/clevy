@@ -6,14 +6,19 @@ import { users } from "@/db/schema";
 import { getCurrentSession, isManager } from "@/lib/auth";
 import { getDict, getLocale, type Dict } from "@/lib/i18n";
 import { AppHeader } from "@/components/app-header";
-import { ReadOnlyBanner, Tag } from "@/components/ui";
+import { ReadOnlyBanner } from "@/components/ui";
+import { CompanyShell } from "@/components/company/company-shell";
+import { Eyebrow, Page } from "@/components/admin/admin-ui";
 import { getCompanyForUser, listJobsForCompany } from "@/lib/company-db";
 import { formatLocation } from "@/lib/location";
+import { SearchesGrid, type SearchItem } from "./searches-grid";
+
+const SERIF = "var(--font-instrument-serif), serif";
 
 export default async function EmpresaHome() {
   const session = await getCurrentSession();
   if (!session) redirect("/login");
-  if (session.role === "candidate") redirect("/candidato");
+  if (session.role === "user") redirect("/candidato");
 
   const t = await getDict();
   const locale = await getLocale();
@@ -37,210 +42,103 @@ export default async function EmpresaHome() {
 
   const jobs = await listJobsForCompany(company.id);
 
+  const items: SearchItem[] = jobs.map((j) => {
+    const loc =
+      formatLocation(
+        { city: j.city, countryCode: j.countryCode, location: j.location },
+        locale
+      ) || "";
+    const meta = [j.industry, j.remote ? t.empresa.remote : loc]
+      .filter(Boolean)
+      .join(" · ");
+    return {
+      id: j.id,
+      title: j.title,
+      meta,
+      status: j.status,
+      applicants: j.applicantCount,
+      avgMatch: j.avgMatch,
+      newCount: j.newCount,
+    };
+  });
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "var(--bg)",
-      }}
+    <CompanyShell
+      userName={user.name ?? ""}
+      companyName={company.name}
+      manager={manager}
+      readOnlyMessage={t.ui.readOnlyDefault}
     >
-      <AppHeader userName={user.name ?? ""} />
-      {!manager ? <ReadOnlyBanner message={t.ui.readOnlyDefault} /> : null}
-      <main style={{ flex: 1, padding: "40px 64px 80px", overflow: "auto" }}>
-        <div
-          style={{
-            maxWidth: 1100,
-            margin: "0 auto",
-            display: "flex",
-            flexDirection: "column",
-            gap: 32,
-          }}
-        >
-          {!company.hasCulture ? (
-            <div
-              style={{
-                padding: "12px 16px",
-                border: "1px solid var(--hairline-strong)",
-                borderRadius: 6,
-                background: "var(--bg-2)",
-                fontSize: 13,
-                color: "var(--fg-dim)",
-              }}
-            >
-              {t.empresa.culturePending}
-            </div>
-          ) : null}
+      <Page max={1240}>
+        {!company.hasCulture ? (
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-end",
-              gap: 24,
+              padding: "12px 16px",
+              border: "1px solid var(--hairline-strong)",
+              borderRadius: 6,
+              background: "var(--bg-2)",
+              fontSize: 13,
+              color: "var(--fg-dim)",
             }}
           >
-            <div>
-              <div
-                style={{
-                  fontSize: 11,
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  color: "var(--fg-dim)",
-                  marginBottom: 10,
-                }}
-              >
-                {company.name}
-                {company.industry ? ` · ${company.industry}` : ""}
-                {manager ? "" : ` · ${t.empresa.readOnlyTag}`}
-              </div>
-              <h1
-                style={{
-                  fontFamily: "var(--font-instrument-serif), serif",
-                  fontSize: 52,
-                  letterSpacing: "-0.03em",
-                  margin: 0,
-                  fontWeight: 400,
-                }}
-              >
-                {t.empresa.vacancies}
-              </h1>
-            </div>
-            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <Link
-                href="/empresa/candidatos"
-                style={linkStyle}
-              >
-                {t.empresa.talentPool}
-              </Link>
-              {manager ? (
-                <>
-                  <Link href="/empresa/equipo" style={linkStyle}>
-                    {t.empresa.team}
-                  </Link>
-                  <Link href="/empresa/perfil" style={linkStyle}>
-                    {t.empresa.editCompany}
-                  </Link>
-                  <Link href="/empresa/vacantes/nueva" style={primaryBtnStyle}>
-                    {t.empresa.newVacancy} <span aria-hidden>→</span>
-                  </Link>
-                </>
-              ) : null}
-            </div>
+            {t.empresa.culturePending}
           </div>
+        ) : null}
 
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+            gap: 24,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <Eyebrow>
+              {company.name} · {jobs.length} {t.empresa.home.searchesCount}
+            </Eyebrow>
+            <h1
               style={{
-                display: "grid",
-                gridTemplateColumns: "2fr 1fr 1fr 0.8fr 30px",
-                gap: 24,
-                padding: "0 4px 12px",
-                borderBottom: "1px solid var(--fg)",
-                fontSize: 11,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                color: "var(--fg-dim)",
+                fontFamily: SERIF,
+                fontSize: 56,
+                letterSpacing: "-0.03em",
+                margin: 0,
+                fontWeight: 400,
+                lineHeight: 1.02,
               }}
             >
-              <span>{t.empresa.thVacancy}</span>
-              <span>{t.empresa.thLocation}</span>
-              <span>{t.empresa.thStatus}</span>
-              <span style={{ textAlign: "right" }}>{t.empresa.thApplicants}</span>
-              <span />
-            </div>
+              {t.empresa.vacancies}
+            </h1>
+          </div>
+          {manager ? (
+            <Link href="/empresa/vacantes/nueva" style={primaryBtnStyle}>
+              {t.empresa.newVacancy} <span aria-hidden>→</span>
+            </Link>
+          ) : null}
+        </div>
 
-            {jobs.length === 0 ? (
-              <div
+        {jobs.length === 0 ? (
+          <div style={{ padding: "40px 4px", fontSize: 14, color: "var(--fg-dim)" }}>
+            {t.empresa.noVacancies}{" "}
+            {manager ? (
+              <Link
+                href="/empresa/vacantes/nueva"
                 style={{
-                  padding: "40px 4px",
-                  fontSize: 14,
-                  color: "var(--fg-dim)",
+                  color: "var(--fg)",
+                  textDecoration: "underline",
+                  textUnderlineOffset: 3,
                 }}
               >
-                {t.empresa.noVacancies}{" "}
-                {manager ? (
-                  <Link
-                    href="/empresa/vacantes/nueva"
-                    style={{
-                      color: "var(--fg)",
-                      textDecoration: "underline",
-                      textUnderlineOffset: 3,
-                    }}
-                  >
-                    {t.empresa.createFirst}
-                  </Link>
-                ) : null}
-              </div>
-            ) : (
-              jobs.map((j) => (
-                <Link
-                  key={j.id}
-                  href={`/empresa/vacantes/${j.id}`}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "2fr 1fr 1fr 0.8fr 30px",
-                    gap: 24,
-                    padding: "20px 4px",
-                    alignItems: "center",
-                    borderBottom: "1px solid var(--hairline)",
-                    textDecoration: "none",
-                    color: "var(--fg)",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontFamily: "var(--font-instrument-serif), serif",
-                      fontSize: 19,
-                      letterSpacing: "-0.005em",
-                    }}
-                  >
-                    {j.title}
-                    {j.remote ? (
-                      <span
-                        style={{
-                          fontSize: 11,
-                          color: "var(--fg-dim)",
-                          marginLeft: 8,
-                          fontFamily: "var(--font-inter), sans-serif",
-                        }}
-                      >
-                        {t.empresa.remote}
-                      </span>
-                    ) : null}
-                  </div>
-                  <div style={{ fontSize: 13, color: "var(--fg-dim)" }}>
-                    {formatLocation(
-                      {
-                        city: j.city,
-                        countryCode: j.countryCode,
-                        location: j.location,
-                      },
-                      locale
-                    ) || "—"}
-                  </div>
-                  <div>
-                    <Tag tone={j.status === "open" ? "accent" : "default"}>
-                      {t.statuses[j.status]}
-                    </Tag>
-                  </div>
-                  <div
-                    style={{
-                      fontVariantNumeric: "tabular-nums",
-                      textAlign: "right",
-                      fontSize: 16,
-                    }}
-                  >
-                    {j.applicantCount}
-                  </div>
-                  <span style={{ color: "var(--fg-dim)" }}>→</span>
-                </Link>
-              ))
-            )}
+                {t.empresa.createFirst}
+              </Link>
+            ) : null}
           </div>
-        </div>
-      </main>
-    </div>
+        ) : (
+          <SearchesGrid items={items} manager={manager} />
+        )}
+      </Page>
+    </CompanyShell>
   );
 }
 
@@ -270,7 +168,7 @@ function NoCompanyState({ userName, t }: { userName: string; t: Dict }) {
       >
         <h1
           style={{
-            fontFamily: "var(--font-instrument-serif), serif",
+            fontFamily: SERIF,
             fontSize: 40,
             letterSpacing: "-0.02em",
             margin: 0,
@@ -294,13 +192,6 @@ function NoCompanyState({ userName, t }: { userName: string; t: Dict }) {
     </div>
   );
 }
-
-const linkStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "var(--fg)",
-  textDecoration: "underline",
-  textUnderlineOffset: 3,
-};
 
 const primaryBtnStyle: React.CSSProperties = {
   display: "inline-flex",

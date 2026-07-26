@@ -31,7 +31,7 @@ function parseAxes(row: Record<string, string>): AxisValues | null {
 
 export async function POST(request: Request) {
   const session = await getCurrentSession();
-  if (!session || session.role !== "admin") {
+  if (!session || session.role !== "root") {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

@@ -9,8 +9,8 @@ const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function POST(request: Request) {
   const session = await getCurrentSession();
-  // Managers and HR support can both reach this; the per-role check is below.
-  if (!session || (session.role !== "recruiter" && !isManager(session.role))) {
+  // Only company admins (and root) can invite.
+  if (!session || !isManager(session.role)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
@@ -39,15 +39,8 @@ export async function POST(request: Request) {
     role?: string;
   };
 
-  // Only two invitable roles. Inviting another HR support is manager-only;
-  // inviting a candidate is allowed for managers and HR support alike.
-  const inviteRole = rawRole === "candidate" ? "candidate" : "recruiter";
-  if (inviteRole === "recruiter" && !isManager(session.role)) {
-    return NextResponse.json(
-      { error: "Solo el HR manager puede invitar a otro HR support" },
-      { status: 401 }
-    );
-  }
+  // Invite either a company teammate (admin) or a candidate (user).
+  const inviteRole = rawRole === "admin" ? "admin" : "user";
 
   const normalizedEmail = email?.trim().toLowerCase() ?? "";
   if (!normalizedEmail.includes("@")) {

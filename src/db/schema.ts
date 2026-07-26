@@ -13,12 +13,8 @@ import { relations } from "drizzle-orm";
 
 // ---------- Enums ----------
 
-export const roleEnum = pgEnum("role", [
-  "admin",
-  "recruiter",
-  "hiring_manager",
-  "candidate",
-]);
+// root = super admin (platform), admin = company admin, user = candidate/applicant.
+export const roleEnum = pgEnum("role", ["root", "admin", "user"]);
 
 export const jobStatusEnum = pgEnum("job_status", [
   "draft",
@@ -26,6 +22,8 @@ export const jobStatusEnum = pgEnum("job_status", [
   "paused",
   "closed",
 ]);
+
+export const jobVisibilityEnum = pgEnum("job_visibility", ["public", "private"]);
 
 export const matchStatusEnum = pgEnum("match_status", [
   "pending",
@@ -65,7 +63,7 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   name: varchar("name", { length: 255 }).notNull(),
   passwordHash: text("password_hash").notNull(),
-  role: roleEnum("role").notNull().default("recruiter"),
+  role: roleEnum("role").notNull().default("user"),
   companyId: uuid("company_id").references(() => companies.id),
   culturalProfile: jsonb("cultural_profile"),
   ...timestamps,
@@ -129,6 +127,7 @@ export const jobs = pgTable("jobs", {
   experienceMin: integer("experience_min"),
   industry: varchar("industry", { length: 120 }),
   status: jobStatusEnum("status").notNull().default("draft"),
+  visibility: jobVisibilityEnum("visibility").notNull().default("public"),
   createdById: uuid("created_by_id").references(() => users.id),
   ...timestamps,
 });
@@ -213,7 +212,7 @@ export const invitations = pgTable("invitations", {
     .notNull()
     .references(() => companies.id),
   email: varchar("email", { length: 255 }).notNull(),
-  role: roleEnum("role").notNull().default("recruiter"),
+  role: roleEnum("role").notNull().default("user"),
   token: varchar("token", { length: 64 }).notNull().unique(),
   status: invitationStatusEnum("status").notNull().default("pending"),
   invitedById: uuid("invited_by_id").references(() => users.id),

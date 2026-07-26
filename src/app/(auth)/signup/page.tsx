@@ -45,7 +45,7 @@ export default async function SignupPage({
     if (inv && inv.status === "pending") {
       inviteEmail = inv.email;
       inviteCompany = inv.companyName ?? null;
-      inviteIsCandidate = inv.role === "candidate";
+      inviteIsCandidate = inv.role === "user";
       inviteValid = true;
     }
   }
