@@ -71,6 +71,13 @@
       "when": 1785101749221,
       "tag": "0009_mixed_bucky",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1785105511488,
+      "tag": "0010_brave_the_phantom",
+      "breakpoints": true
     }
   ]
 }

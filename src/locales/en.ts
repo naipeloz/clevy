@@ -93,6 +93,14 @@ export const en: Dict = {
         remove: "Delete",
         pickCompany: "— Pick a company —",
       },
+      usersSection: {
+        title: "Assigned users",
+        subtitle: "Add or remove users from this search.",
+        add: "Add",
+        placeholder: "— Pick a user —",
+        empty: "No users assigned.",
+        remove: "Remove",
+      },
     },
     users: {
       eyebrow: "Users",

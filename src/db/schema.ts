@@ -6,6 +6,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -181,6 +182,22 @@ export const matches = pgTable("matches", {
   reasoning: text("reasoning"),
   ...timestamps,
 });
+
+// Users (from the admin user list) assigned to a search by an admin.
+export const jobUsers = pgTable(
+  "job_users",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => jobs.id),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id),
+    ...timestamps,
+  },
+  (t) => [unique().on(t.jobId, t.userId)]
+);
 
 export const atsIntegrations = pgTable("ats_integrations", {
   id: uuid("id").primaryKey().defaultRandom(),

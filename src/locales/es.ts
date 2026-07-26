@@ -91,6 +91,14 @@ export const es = {
         remove: "Eliminar",
         pickCompany: "— Elegí una empresa —",
       },
+      usersSection: {
+        title: "Usuarios asignados",
+        subtitle: "Agregá o quitá usuarios de esta búsqueda.",
+        add: "Agregar",
+        placeholder: "— Elegí un usuario —",
+        empty: "No hay usuarios asignados.",
+        remove: "Quitar",
+      },
     },
     users: {
       eyebrow: "Usuarios",

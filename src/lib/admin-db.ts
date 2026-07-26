@@ -3,6 +3,7 @@ import { db } from "@/db";
 import {
   candidates as candidatesTable,
   companies as companiesTable,
+  jobUsers,
   jobs as jobsTable,
   matches as matchesTable,
   orgCulture,
@@ -58,6 +59,28 @@ export async function listAdminJobs(limit?: number): Promise<AdminJobRow[]> {
     .orderBy(desc(jobsTable.createdAt));
   const rows = limit ? await q.limit(limit) : await q;
   return rows;
+}
+
+export type JobUserRow = {
+  id: string;
+  name: string;
+  email: string;
+  role: (typeof roleEnum.enumValues)[number];
+};
+
+// Users assigned to a search (via job_users).
+export async function listJobUsers(jobId: string): Promise<JobUserRow[]> {
+  return db
+    .select({
+      id: usersTable.id,
+      name: usersTable.name,
+      email: usersTable.email,
+      role: usersTable.role,
+    })
+    .from(jobUsers)
+    .innerJoin(usersTable, eq(jobUsers.userId, usersTable.id))
+    .where(eq(jobUsers.jobId, jobId))
+    .orderBy(usersTable.name);
 }
 
 export async function getAdminJob(id: string) {
