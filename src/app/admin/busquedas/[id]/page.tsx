@@ -5,11 +5,11 @@ import { Page, PageTitle } from "@/components/admin/admin-ui";
 import {
   getAdminJob,
   listAdminCompanies,
-  listAdminUsers,
-  listJobUsers,
+  listAllCandidates,
+  listJobCandidates,
 } from "@/lib/admin-db";
 import { SearchForm } from "../search-form";
-import { SearchUsers } from "../search-users";
+import { SearchCandidates } from "../search-candidates";
 
 export default async function EditSearchPage({
   params,
@@ -18,11 +18,11 @@ export default async function EditSearchPage({
 }) {
   const { id } = await params;
   const t = await getDict();
-  const [job, companies, assigned, allUsers] = await Promise.all([
+  const [job, companies, candidates, allCandidates] = await Promise.all([
     getAdminJob(id),
     listAdminCompanies(),
-    listJobUsers(id),
-    listAdminUsers(),
+    listJobCandidates(id),
+    listAllCandidates(),
   ]);
   if (!job) notFound();
 
@@ -48,15 +48,10 @@ export default async function EditSearchPage({
         }}
         companies={companies.map((c) => ({ id: c.id, name: c.name }))}
       />
-      <SearchUsers
+      <SearchCandidates
         jobId={job.id}
-        assigned={assigned}
-        allUsers={allUsers.map((u) => ({
-          id: u.id,
-          name: u.name,
-          email: u.email,
-          role: u.role,
-        }))}
+        candidates={candidates}
+        allCandidates={allCandidates}
       />
     </Page>
   );

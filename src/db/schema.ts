@@ -33,6 +33,16 @@ export const matchStatusEnum = pgEnum("match_status", [
   "hired",
 ]);
 
+// Clevy-side workflow stage of a candidate on a search. Only "approved_by_clevy"
+// is shown to the company. Distinct from matchStatus (the company's own pipeline).
+export const matchStageEnum = pgEnum("match_stage", [
+  "self_applied", // applied from the public site
+  "presented_by_admin", // added by admin, or via a shared link
+  "approved_by_clevy", // approved — visible to the company
+  "suggested_by_ai", // future
+  "pending_cultural_match", // candidate has no cultural assessment yet
+]);
+
 export const fileTypeEnum = pgEnum("file_type", [
   "resume",
   "cover_letter",
@@ -179,6 +189,10 @@ export const matches = pgTable("matches", {
     .references(() => jobs.id),
   score: integer("score"),
   status: matchStatusEnum("status").notNull().default("pending"),
+  stage: matchStageEnum("stage").notNull().default("pending_cultural_match"),
+  // CV used for this specific application (a link for now); the cultural score
+  // stays on the candidate and is shared across searches.
+  cvUrl: text("cv_url"),
   reasoning: text("reasoning"),
   ...timestamps,
 });

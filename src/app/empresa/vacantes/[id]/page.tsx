@@ -5,6 +5,7 @@ import { getDict, getLocale } from "@/lib/i18n";
 import { Avatar, MatchPill, Tag } from "@/components/ui";
 import { CompanyShell } from "@/components/company/company-shell";
 import { Page } from "@/components/admin/admin-ui";
+import { RichText } from "@/components/rich-text";
 import {
   getCompanyForUser,
   getJobForCompany,
@@ -114,18 +115,10 @@ export default async function VacanteDetailPage({
           </div>
 
           {job.description ? (
-            <p
-              style={{
-                fontSize: 15,
-                lineHeight: 1.6,
-                color: "var(--fg)",
-                maxWidth: 720,
-                whiteSpace: "pre-wrap",
-                margin: 0,
-              }}
-            >
-              {job.description}
-            </p>
+            <RichText
+              markdown={job.description}
+              style={{ fontSize: 15, color: "var(--fg)", maxWidth: 720 }}
+            />
           ) : null}
 
           {job.industry || job.experienceMin != null || job.hardSkills.length > 0 ? (

@@ -1,13 +1,14 @@
 import { desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
+  candidateCulture,
   candidates as candidatesTable,
   companies as companiesTable,
-  jobUsers,
   jobs as jobsTable,
   matches as matchesTable,
   orgCulture,
   users as usersTable,
+  type matchStageEnum,
   type roleEnum,
 } from "@/db/schema";
 
@@ -61,26 +62,54 @@ export async function listAdminJobs(limit?: number): Promise<AdminJobRow[]> {
   return rows;
 }
 
-export type JobUserRow = {
-  id: string;
+export type MatchStage = (typeof matchStageEnum.enumValues)[number];
+
+export type JobCandidateRow = {
+  matchId: string;
+  candidateId: string;
   name: string;
   email: string;
-  role: (typeof roleEnum.enumValues)[number];
+  stage: MatchStage;
+  cvUrl: string | null;
+  hasCulture: boolean;
 };
 
-// Users assigned to a search (via job_users).
-export async function listJobUsers(jobId: string): Promise<JobUserRow[]> {
+// Candidates on a search (all stages), for the admin candidate manager.
+export async function listJobCandidates(
+  jobId: string
+): Promise<JobCandidateRow[]> {
   return db
     .select({
-      id: usersTable.id,
-      name: usersTable.name,
-      email: usersTable.email,
-      role: usersTable.role,
+      matchId: matchesTable.id,
+      candidateId: candidatesTable.id,
+      name: candidatesTable.name,
+      email: candidatesTable.email,
+      stage: matchesTable.stage,
+      cvUrl: matchesTable.cvUrl,
+      hasCulture: sql<boolean>`(${candidateCulture.id} is not null)`,
     })
-    .from(jobUsers)
-    .innerJoin(usersTable, eq(jobUsers.userId, usersTable.id))
-    .where(eq(jobUsers.jobId, jobId))
-    .orderBy(usersTable.name);
+    .from(matchesTable)
+    .innerJoin(candidatesTable, eq(matchesTable.candidateId, candidatesTable.id))
+    .leftJoin(
+      candidateCulture,
+      eq(candidateCulture.candidateId, candidatesTable.id)
+    )
+    .where(eq(matchesTable.jobId, jobId))
+    .orderBy(desc(matchesTable.createdAt));
+}
+
+export type CandidateOption = { id: string; name: string; email: string };
+
+// The whole talent pool, for the "add candidates" modal.
+export async function listAllCandidates(): Promise<CandidateOption[]> {
+  return db
+    .select({
+      id: candidatesTable.id,
+      name: candidatesTable.name,
+      email: candidatesTable.email,
+    })
+    .from(candidatesTable)
+    .orderBy(candidatesTable.name);
 }
 
 export async function getAdminJob(id: string) {

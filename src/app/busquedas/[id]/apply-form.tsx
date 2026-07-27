@@ -10,6 +10,7 @@ export function ApplyForm({ jobId }: { jobId: string }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [linkedinUrl, setLinkedin] = useState("");
+  const [cvUrl, setCvUrl] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<null | "sent" | "already">(null);
@@ -23,7 +24,7 @@ export function ApplyForm({ jobId }: { jobId: string }) {
       const res = await fetch("/api/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobId, name, email, linkedinUrl, message }),
+        body: JSON.stringify({ jobId, name, email, linkedinUrl, cvUrl, message }),
       });
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
@@ -89,6 +90,17 @@ export function ApplyForm({ jobId }: { jobId: string }) {
             value={linkedinUrl}
             onChange={(e) => setLinkedin(e.target.value)}
             placeholder="https://linkedin.com/in/…"
+          />
+        )}
+      </Field>
+      <Field label={p.fieldCv}>
+        {(id) => (
+          <Input
+            id={id}
+            type="url"
+            value={cvUrl}
+            onChange={(e) => setCvUrl(e.target.value)}
+            placeholder="https://…/mi-cv.pdf"
           />
         )}
       </Field>

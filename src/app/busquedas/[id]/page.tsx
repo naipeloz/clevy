@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getDict, getLocale } from "@/lib/i18n";
 import { Avatar, Tag } from "@/components/ui";
 import { PublicHeader } from "@/components/public-header";
+import { RichText } from "@/components/rich-text";
 import { getPublicJob } from "@/lib/public-db";
 import { formatLocation } from "@/lib/location";
 import { ApplyForm } from "./apply-form";
@@ -86,9 +87,11 @@ export default async function PublicJobDetailPage({
               >
                 {p.aboutRole}
               </div>
-              <div style={{ fontSize: 15, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
-                {job.description || "—"}
-              </div>
+              {job.description ? (
+                <RichText markdown={job.description} style={{ fontSize: 15 }} />
+              ) : (
+                <div style={{ fontSize: 15, color: "var(--fg-dim)" }}>—</div>
+              )}
             </div>
 
             <div

@@ -1,4 +1,4 @@
-import { desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   candidateCulture,
@@ -214,7 +214,12 @@ export async function listJobsForCompany(
       newN: sql<number>`cast(count(*) filter (where ${matchesTable.status} = 'pending') as int)`,
     })
     .from(matchesTable)
-    .where(inArray(matchesTable.jobId, ids))
+    .where(
+      and(
+        inArray(matchesTable.jobId, ids),
+        eq(matchesTable.stage, "approved_by_clevy")
+      )
+    )
     .groupBy(matchesTable.jobId);
 
   const stats = new Map(countRows.map((c) => [c.jobId, c]));
@@ -278,7 +283,12 @@ export async function getJobForCompany(
       newN: sql<number>`cast(count(*) filter (where ${matchesTable.status} = 'pending') as int)`,
     })
     .from(matchesTable)
-    .where(eq(matchesTable.jobId, jobId));
+    .where(
+      and(
+        eq(matchesTable.jobId, jobId),
+        eq(matchesTable.stage, "approved_by_clevy")
+      )
+    );
   return {
     ...j,
     hardSkills: toStringArray(j.hardSkills),
@@ -311,7 +321,13 @@ export async function listApplicantsForJob(
       candidateCulture,
       eq(candidateCulture.candidateId, candidatesTable.id)
     )
-    .where(eq(matchesTable.jobId, jobId));
+    // The company only sees candidates Clevy has approved.
+    .where(
+      and(
+        eq(matchesTable.jobId, jobId),
+        eq(matchesTable.stage, "approved_by_clevy")
+      )
+    );
 
   return rows
     .map((r) => {

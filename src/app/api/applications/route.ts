@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { candidates, jobs, matches } from "@/db/schema";
+import { candidateCulture, candidates, jobs, matches } from "@/db/schema";
 
 function optionalString(v: unknown): string | null {
   if (typeof v !== "string") return null;
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
   const email = optionalString(raw.email)?.toLowerCase() ?? null;
   const linkedinUrl = optionalString(raw.linkedinUrl);
   const message = optionalString(raw.message);
+  const cvUrl = optionalString(raw.cvUrl);
 
   if (!jobId || !name || !email) {
     return NextResponse.json(
@@ -120,10 +121,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, already: true });
   }
 
+  // Self-applied, unless the candidate has no cultural assessment yet.
+  const [culture] = await db
+    .select({ id: candidateCulture.id })
+    .from(candidateCulture)
+    .where(eq(candidateCulture.candidateId, candidateId))
+    .limit(1);
+  const stage = culture ? "self_applied" : "pending_cultural_match";
+
   await db.insert(matches).values({
     candidateId,
     jobId,
     status: "pending",
+    stage,
+    cvUrl,
   });
 
   return NextResponse.json({ ok: true, already: false });

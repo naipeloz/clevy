@@ -196,7 +196,7 @@ export function SearchForm({
         />
         {f.remote}
       </label>
-      <Field label={f.description}>
+      <Field label={f.description} hint={f.descriptionHint}>
         {(fid) => (
           <Textarea
             id={fid}
