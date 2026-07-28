@@ -545,9 +545,13 @@ async function seedManagerPipeline(lineaId: string) {
         )
         .limit(1);
       if (!existingMatch) {
-        await db
-          .insert(schema.matches)
-          .values({ jobId, candidateId: cand.id, status: "pending" });
+        await db.insert(schema.matches).values({
+          jobId,
+          candidateId: cand.id,
+          status: "pending",
+          // Demo applicants are Clevy-approved so they show in company views.
+          stage: "approved_by_clevy",
+        });
       }
     }
   }
