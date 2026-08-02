@@ -64,6 +64,13 @@ export const es = {
       view: "Editar",
       newButton: "Nueva empresa",
       empty: "No hay empresas registradas.",
+      cultureTitle: "Perfil cultural",
+      cultureSubtitle:
+        "Valores que eligió la empresa y cómo se traducen en los 7 ejes culturales.",
+      cultureValues: "Valores centrales",
+      cultureAxes: "Ejes culturales",
+      cultureEmpty:
+        "La empresa todavía no definió su perfil cultural. Aparecerá acá cuando complete el formulario.",
     },
     searches: {
       eyebrow: "Búsquedas",
@@ -77,6 +84,18 @@ export const es = {
       newButton: "Nueva búsqueda",
       empty: "No hay búsquedas publicadas.",
       visibility: { public: "Pública", private: "Privada" },
+      viewPublished: "Ver publicación",
+      notPublished: "Solo visible cuando la búsqueda es pública y está abierta.",
+      remove: "Eliminar",
+      removing: "Eliminando…",
+      confirmRemove:
+        '¿Eliminar la búsqueda "{title}"? Se borrarán también sus postulaciones.',
+      removeError: "No se pudo eliminar la búsqueda",
+      detail: {
+        description: "Descripción del cargo",
+        noDescription: "Esta búsqueda todavía no tiene descripción.",
+        edit: "Editar búsqueda",
+      },
       form: {
         newTitle: "Nueva búsqueda.",
         title: "Título",
@@ -129,6 +148,16 @@ export const es = {
         root: "Super admin",
         admin: "Empresa (admin)",
         user: "Usuario",
+      },
+      tabs: {
+        admin: "Empresa admin",
+        user: "Candidatos",
+        root: "Super admin",
+      },
+      emptyByTab: {
+        admin: "No hay usuarios de empresa.",
+        user: "No hay candidatos registrados.",
+        root: "No hay super admins.",
       },
     },
   },
@@ -281,6 +310,16 @@ export const es = {
     paused: "Pausada",
     closed: "Cerrada",
   },
+  remoteWork: {
+    scopeLabel: "¿Desde dónde se puede trabajar?",
+    scopePlaceholder: "— Elegí un alcance —",
+    scopes: {
+      latam: "Latam",
+      europe: "Europa",
+      usa: "USA",
+      anywhere: "Cualquier lugar",
+    },
+  },
   applicantStatus: {
     pending: "Nuevo",
     shortlisted: "Preseleccionado",
@@ -418,6 +457,16 @@ export const es = {
     statusPause: "Pausar",
     statusClose: "Cerrar",
     statusReopen: "Reabrir",
+    shareTitle: "Link de la vacante — compartilo con tus candidatos",
+    shareHint:
+      "Cualquier persona con este link puede ver la vacante y postularse.",
+    shareCopy: "Copiar link",
+    shareCopied: "¡Copiado!",
+    shareOpen: "Abrir",
+    shareDraft:
+      "La vacante todavía no está publicada. Publicala para que el link funcione.",
+    sharePrivate:
+      "La vacante es privada. Cambiala a pública para que el link funcione.",
   },
   equipo: {
     backVacancies: "← Vacantes",

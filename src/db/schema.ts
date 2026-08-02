@@ -26,6 +26,14 @@ export const jobStatusEnum = pgEnum("job_status", [
 
 export const jobVisibilityEnum = pgEnum("job_visibility", ["public", "private"]);
 
+// Where a remote role can be worked from. Only meaningful when `remote` is true.
+export const remoteScopeEnum = pgEnum("remote_scope", [
+  "latam",
+  "europe",
+  "usa",
+  "anywhere",
+]);
+
 export const matchStatusEnum = pgEnum("match_status", [
   "pending",
   "shortlisted",
@@ -131,6 +139,7 @@ export const jobs = pgTable("jobs", {
   countryCode: varchar("country_code", { length: 2 }),
   city: varchar("city", { length: 120 }),
   remote: boolean("remote").notNull().default(false),
+  remoteScope: remoteScopeEnum("remote_scope"),
   salaryMin: integer("salary_min"),
   salaryMax: integer("salary_max"),
   currency: varchar("currency", { length: 8 }).notNull().default("USD"),

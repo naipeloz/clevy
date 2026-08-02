@@ -11,6 +11,8 @@ import {
   Textarea,
 } from "@/components/admin/form";
 import { useT } from "@/components/locale-provider";
+import { fmt } from "@/lib/fmt";
+import { REMOTE_SCOPES, type RemoteScope } from "@/lib/location";
 
 export type SearchValues = {
   title: string;
@@ -20,6 +22,7 @@ export type SearchValues = {
   description: string;
   location: string;
   remote: boolean;
+  remoteScope: RemoteScope | "";
 };
 
 const EMPTY: SearchValues = {
@@ -30,6 +33,7 @@ const EMPTY: SearchValues = {
   description: "",
   location: "",
   remote: false,
+  remoteScope: "",
 };
 
 const STATUS_ORDER = ["draft", "open", "paused", "closed"] as const;
@@ -65,7 +69,10 @@ export function SearchForm({
         {
           method: id ? "PATCH" : "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
+          body: JSON.stringify({
+            ...values,
+            remoteScope: values.remote ? values.remoteScope || null : null,
+          }),
         }
       );
       const data = (await res.json().catch(() => ({}))) as {
@@ -87,7 +94,7 @@ export function SearchForm({
 
   async function onDelete() {
     if (!id) return;
-    if (!confirm(`¿Eliminar la búsqueda "${values.title}"? Se borrarán también sus postulaciones.`)) {
+    if (!confirm(fmt(t.admin.searches.confirmRemove, { title: values.title }))) {
       return;
     }
     setError(null);
@@ -99,7 +106,7 @@ export function SearchForm({
         redirectTo?: string;
       };
       if (!res.ok) {
-        setError(data.error ?? "No se pudo eliminar la búsqueda");
+        setError(data.error ?? t.admin.searches.removeError);
         return;
       }
       router.push(data.redirectTo ?? "/admin/busquedas");
@@ -196,6 +203,26 @@ export function SearchForm({
         />
         {f.remote}
       </label>
+      {values.remote ? (
+        <Field label={t.remoteWork.scopeLabel}>
+          {(fid) => (
+            <Select
+              id={fid}
+              value={values.remoteScope}
+              onChange={(e) =>
+                upd("remoteScope", e.target.value as SearchValues["remoteScope"])
+              }
+            >
+              <option value="">{t.remoteWork.scopePlaceholder}</option>
+              {REMOTE_SCOPES.map((s) => (
+                <option key={s} value={s}>
+                  {t.remoteWork.scopes[s]}
+                </option>
+              ))}
+            </Select>
+          )}
+        </Field>
+      ) : null}
       <Field label={f.description} hint={f.descriptionHint}>
         {(fid) => (
           <Textarea

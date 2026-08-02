@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getDict, getLocale } from "@/lib/i18n";
 import { Tag } from "@/components/ui";
 import { Eyebrow, Page, PageTitle, StatStrip } from "@/components/admin/admin-ui";
@@ -72,15 +73,19 @@ export default async function AdminOverviewPage() {
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
+                  <Link
+                    href={`/admin/busquedas/${b.id}`}
                     style={{
+                      display: "block",
                       fontSize: 14.5,
                       fontFamily: SERIF,
                       letterSpacing: "-0.005em",
+                      color: "var(--fg)",
+                      textDecoration: "none",
                     }}
                   >
                     {b.title}
-                  </div>
+                  </Link>
                   <div style={{ fontSize: 12, color: "var(--fg-dim)" }}>
                     {b.company} · {b.applicants} {a.applicants}
                   </div>

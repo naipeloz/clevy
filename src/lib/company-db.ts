@@ -16,6 +16,7 @@ import {
   isAxisValues,
   type AxisValues,
 } from "./clevy-data";
+import type { RemoteScope } from "./location";
 
 export type CompanyForUser = {
   id: string;
@@ -39,6 +40,8 @@ export type JobRow = {
   countryCode: string | null;
   city: string | null;
   remote: boolean;
+  remoteScope: RemoteScope | null;
+  visibility: "public" | "private";
   salaryMin: number | null;
   salaryMax: number | null;
   currency: string;
@@ -190,6 +193,8 @@ export async function listJobsForCompany(
       countryCode: jobsTable.countryCode,
       city: jobsTable.city,
       remote: jobsTable.remote,
+      remoteScope: jobsTable.remoteScope,
+      visibility: jobsTable.visibility,
       salaryMin: jobsTable.salaryMin,
       salaryMax: jobsTable.salaryMax,
       currency: jobsTable.currency,
@@ -261,6 +266,8 @@ export async function getJobForCompany(
       countryCode: jobsTable.countryCode,
       city: jobsTable.city,
       remote: jobsTable.remote,
+      remoteScope: jobsTable.remoteScope,
+      visibility: jobsTable.visibility,
       salaryMin: jobsTable.salaryMin,
       salaryMax: jobsTable.salaryMax,
       currency: jobsTable.currency,

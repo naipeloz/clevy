@@ -1,6 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { companies, jobs } from "@/db/schema";
+import type { RemoteScope } from "./location";
 
 export type PublicJob = {
   id: string;
@@ -12,6 +13,7 @@ export type PublicJob = {
   countryCode: string | null;
   city: string | null;
   remote: boolean;
+  remoteScope: RemoteScope | null;
   description: string | null;
   createdAt: Date;
 };
@@ -31,6 +33,7 @@ export async function listPublicJobs(): Promise<PublicJob[]> {
       countryCode: jobs.countryCode,
       city: jobs.city,
       remote: jobs.remote,
+      remoteScope: jobs.remoteScope,
       description: jobs.description,
       createdAt: jobs.createdAt,
     })
@@ -52,6 +55,7 @@ export async function getPublicJob(id: string): Promise<PublicJob | null> {
       countryCode: jobs.countryCode,
       city: jobs.city,
       remote: jobs.remote,
+      remoteScope: jobs.remoteScope,
       description: jobs.description,
       createdAt: jobs.createdAt,
     })

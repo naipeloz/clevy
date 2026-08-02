@@ -3,7 +3,7 @@ import { getDict, getLocale } from "@/lib/i18n";
 import { Avatar, Tag } from "@/components/ui";
 import { PublicHeader } from "@/components/public-header";
 import { listPublicJobs } from "@/lib/public-db";
-import { formatLocation } from "@/lib/location";
+import { formatLocation, remoteLabel } from "@/lib/location";
 
 const SERIF = "var(--font-instrument-serif), serif";
 
@@ -58,7 +58,12 @@ export default async function PublicJobsPage() {
                     { city: j.city, countryCode: j.countryCode, location: j.location },
                     locale
                   ) || "";
-                const place = j.remote ? p.remote : loc;
+                const remote = remoteLabel(
+                  p.remote,
+                  j.remoteScope,
+                  t.remoteWork.scopes
+                );
+                const place = j.remote ? remote : loc;
                 return (
                   <div
                     key={j.id}
@@ -108,7 +113,7 @@ export default async function PublicJobsPage() {
                     ) : null}
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {j.industry ? <Tag>{j.industry}</Tag> : null}
-                      {j.remote ? <Tag>{p.remote}</Tag> : null}
+                      {j.remote ? <Tag>{remote}</Tag> : null}
                     </div>
                     <div
                       style={{

@@ -67,9 +67,16 @@ export default async function AdminCompaniesPage() {
       key: "culture",
       label: c.thCulture,
       w: "1fr",
+      // "Completo" opens the company's cultural profile summary.
       render: (r) =>
         r.hasCulture ? (
-          <Tag tone="accent">{c.cultureComplete}</Tag>
+          <Link
+            href={`/admin/empresas/${r.id}#cultura`}
+            title={c.cultureTitle}
+            style={{ textDecoration: "none" }}
+          >
+            <Tag tone="accent">{c.cultureComplete} →</Tag>
+          </Link>
         ) : (
           <Tag>{c.culturePending}</Tag>
         ),

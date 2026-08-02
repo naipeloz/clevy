@@ -8,9 +8,22 @@ import {
   PageTitle,
 } from "@/components/admin/admin-ui";
 import { relativeTime } from "@/lib/relative-time";
-import { listAdminUsers, type AdminUserRow } from "@/lib/admin-db";
+import {
+  countAdminUsersByRole,
+  listAdminUsers,
+  type AdminUserRow,
+} from "@/lib/admin-db";
 
 const SERIF = "var(--font-instrument-serif), serif";
+
+// The list is split by role: company admins are the default view, candidates
+// and super admins live behind their own tab.
+const TABS = ["admin", "user", "root"] as const;
+type TabRole = (typeof TABS)[number];
+
+function isTabRole(v: unknown): v is TabRole {
+  return typeof v === "string" && (TABS as readonly string[]).includes(v);
+}
 
 const newBtnStyle: React.CSSProperties = {
   display: "inline-flex",
@@ -27,11 +40,22 @@ const newBtnStyle: React.CSSProperties = {
   whiteSpace: "nowrap",
 };
 
-export default async function AdminUsersPage() {
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const t = await getDict();
   const locale = await getLocale();
   const u = t.admin.users;
-  const rows = await listAdminUsers();
+
+  const rol = (await searchParams).rol;
+  const tab: TabRole = isTabRole(rol) ? rol : "admin";
+
+  const [rows, counts] = await Promise.all([
+    listAdminUsers(tab),
+    countAdminUsersByRole(),
+  ]);
 
   const columns: Column<AdminUserRow>[] = [
     {
@@ -105,12 +129,49 @@ export default async function AdminUsersPage() {
           flexWrap: "wrap",
         }}
       >
-        <PageTitle eyebrow={`${u.eyebrow} · ${rows.length}`} title={u.title} />
+        <PageTitle
+          eyebrow={`${u.eyebrow} · ${counts[tab]}`}
+          title={u.tabs[tab]}
+        />
         <Link href="/admin/usuarios/nuevo" style={newBtnStyle}>
           + {u.newButton}
         </Link>
       </div>
-      <AdminTable columns={columns} rows={rows} empty={u.empty} />
+
+      <div
+        style={{
+          display: "inline-flex",
+          gap: 4,
+          border: "1px solid var(--hairline-strong)",
+          borderRadius: 999,
+          padding: 3,
+          alignSelf: "flex-start",
+        }}
+      >
+        {TABS.map((id) => {
+          const active = id === tab;
+          return (
+            <Link
+              key={id}
+              href={`/admin/usuarios?rol=${id}`}
+              aria-current={active ? "page" : undefined}
+              style={{
+                padding: "8px 16px",
+                fontSize: 13,
+                borderRadius: 999,
+                background: active ? "var(--fg)" : "transparent",
+                color: active ? "var(--bg)" : "var(--fg)",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {u.tabs[id]} · {counts[id]}
+            </Link>
+          );
+        })}
+      </div>
+
+      <AdminTable columns={columns} rows={rows} empty={u.emptyByTab[tab]} />
     </Page>
   );
 }

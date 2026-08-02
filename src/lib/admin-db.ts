@@ -11,6 +11,7 @@ import {
   type matchStageEnum,
   type roleEnum,
 } from "@/db/schema";
+import { isAxisValues, type AxisValues } from "./clevy-data";
 
 type UserRole = (typeof roleEnum.enumValues)[number];
 
@@ -118,13 +119,18 @@ export async function getAdminJob(id: string) {
       id: jobsTable.id,
       title: jobsTable.title,
       companyId: jobsTable.companyId,
+      company: companiesTable.name,
       status: jobsTable.status,
       visibility: jobsTable.visibility,
       description: jobsTable.description,
       location: jobsTable.location,
+      countryCode: jobsTable.countryCode,
+      city: jobsTable.city,
       remote: jobsTable.remote,
+      remoteScope: jobsTable.remoteScope,
     })
     .from(jobsTable)
+    .innerJoin(companiesTable, eq(jobsTable.companyId, companiesTable.id))
     .where(eq(jobsTable.id, id))
     .limit(1);
   return row ?? null;
@@ -174,6 +180,42 @@ export async function getAdminCompany(id: string) {
   return row ?? null;
 }
 
+export type AdminCompanyCulture = {
+  axes: AxisValues;
+  selected: string[];
+  priorities: Record<string, number>;
+};
+
+// The company's cultural profile, for the admin read-only summary.
+// Returns null when the company hasn't completed the culture form.
+export async function getAdminCompanyCulture(
+  companyId: string
+): Promise<AdminCompanyCulture | null> {
+  const [row] = await db
+    .select({ values: orgCulture.values, workStyle: orgCulture.workStyle })
+    .from(orgCulture)
+    .where(eq(orgCulture.companyId, companyId))
+    .limit(1);
+
+  if (!row || !isAxisValues(row.values)) return null;
+
+  const ws = row.workStyle as
+    | { selected?: unknown; priorities?: unknown }
+    | null
+    | undefined;
+  const selected = Array.isArray(ws?.selected)
+    ? ws.selected.filter((x): x is string => typeof x === "string")
+    : [];
+  const priorities: Record<string, number> = {};
+  if (ws?.priorities && typeof ws.priorities === "object") {
+    for (const [k, v] of Object.entries(ws.priorities as object)) {
+      if (typeof v === "number") priorities[k] = v;
+    }
+  }
+
+  return { axes: row.values, selected, priorities };
+}
+
 export async function getAdminUser(id: string) {
   const [row] = await db
     .select({
@@ -197,8 +239,10 @@ export type AdminUserRow = {
   createdAt: Date;
 };
 
-export async function listAdminUsers(): Promise<AdminUserRow[]> {
-  return db
+// `role` narrows the list to one group — the admin user list is split into
+// company admins / candidates / super admins.
+export async function listAdminUsers(role?: UserRole): Promise<AdminUserRow[]> {
+  let q = db
     .select({
       id: usersTable.id,
       name: usersTable.name,
@@ -207,7 +251,21 @@ export async function listAdminUsers(): Promise<AdminUserRow[]> {
       createdAt: usersTable.createdAt,
     })
     .from(usersTable)
-    .orderBy(desc(usersTable.createdAt));
+    .$dynamic();
+  if (role) q = q.where(eq(usersTable.role, role));
+  return q.orderBy(desc(usersTable.createdAt));
+}
+
+export type AdminUserCounts = Record<UserRole, number>;
+
+export async function countAdminUsersByRole(): Promise<AdminUserCounts> {
+  const rows = await db
+    .select({ role: usersTable.role, n: sql<number>`count(*)::int` })
+    .from(usersTable)
+    .groupBy(usersTable.role);
+  const counts: AdminUserCounts = { root: 0, admin: 0, user: 0 };
+  for (const r of rows) counts[r.role] = r.n;
+  return counts;
 }
 
 export type AdminActivity = {

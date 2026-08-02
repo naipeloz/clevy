@@ -66,6 +66,13 @@ export const en: Dict = {
       view: "Edit",
       newButton: "New company",
       empty: "No companies registered.",
+      cultureTitle: "Culture profile",
+      cultureSubtitle:
+        "The values this company picked and how they map onto the 7 cultural axes.",
+      cultureValues: "Core values",
+      cultureAxes: "Cultural axes",
+      cultureEmpty:
+        "This company hasn't defined its culture profile yet. It will show up here once they complete the form.",
     },
     searches: {
       eyebrow: "Searches",
@@ -79,6 +86,18 @@ export const en: Dict = {
       newButton: "New search",
       empty: "No searches published.",
       visibility: { public: "Public", private: "Private" },
+      viewPublished: "View posting",
+      notPublished: "Only visible while the search is public and open.",
+      remove: "Delete",
+      removing: "Deleting…",
+      confirmRemove:
+        'Delete the search "{title}"? Its applications will be removed too.',
+      removeError: "Could not delete the search",
+      detail: {
+        description: "Role description",
+        noDescription: "This search has no description yet.",
+        edit: "Edit search",
+      },
       form: {
         newTitle: "New search.",
         title: "Title",
@@ -131,6 +150,16 @@ export const en: Dict = {
         root: "Super admin",
         admin: "Company admin",
         user: "User",
+      },
+      tabs: {
+        admin: "Company admin",
+        user: "Candidates",
+        root: "Super admin",
+      },
+      emptyByTab: {
+        admin: "No company users.",
+        user: "No candidates registered.",
+        root: "No super admins.",
       },
     },
   },
@@ -283,6 +312,16 @@ export const en: Dict = {
     paused: "Paused",
     closed: "Closed",
   },
+  remoteWork: {
+    scopeLabel: "Where can it be worked from?",
+    scopePlaceholder: "— Pick a scope —",
+    scopes: {
+      latam: "LatAm",
+      europe: "Europe",
+      usa: "USA",
+      anywhere: "Anywhere",
+    },
+  },
   applicantStatus: {
     pending: "New",
     shortlisted: "Shortlisted",
@@ -420,6 +459,15 @@ export const en: Dict = {
     statusPause: "Pause",
     statusClose: "Close",
     statusReopen: "Reopen",
+    shareTitle: "Vacancy link — share it with your candidates",
+    shareHint: "Anyone with this link can see the vacancy and apply.",
+    shareCopy: "Copy link",
+    shareCopied: "Copied!",
+    shareOpen: "Open",
+    shareDraft:
+      "This vacancy isn't published yet. Publish it so the link works.",
+    sharePrivate:
+      "This vacancy is private. Switch it to public so the link works.",
   },
   equipo: {
     backVacancies: "← Vacancies",

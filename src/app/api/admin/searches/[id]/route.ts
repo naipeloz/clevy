@@ -4,11 +4,13 @@ import { db } from "@/db";
 import {
   companies,
   jobStatusEnum,
+  jobUsers,
   jobVisibilityEnum,
   jobs,
   matches,
 } from "@/db/schema";
 import { getCurrentSession } from "@/lib/auth";
+import { isRemoteScope } from "@/lib/location";
 
 const STATUSES = new Set<string>(jobStatusEnum.enumValues);
 const VISIBILITIES = new Set<string>(jobVisibilityEnum.enumValues);
@@ -63,6 +65,7 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Empresa inválida" }, { status: 400 });
   }
 
+  const remote = raw.remote === true;
   const [updated] = await db
     .update(jobs)
     .set({
@@ -72,7 +75,9 @@ export async function PATCH(request: Request, { params }: Params) {
       visibility: visibility as (typeof jobVisibilityEnum.enumValues)[number],
       description: optionalString(raw.description),
       location: optionalString(raw.location),
-      remote: raw.remote === true,
+      remote,
+      // A scope only makes sense for remote searches.
+      remoteScope: remote && isRemoteScope(raw.remoteScope) ? raw.remoteScope : null,
     })
     .where(eq(jobs.id, id))
     .returning({ id: jobs.id });
@@ -90,15 +95,31 @@ export async function DELETE(_request: Request, { params }: Params) {
   }
   const { id } = await params;
 
-  // A search owns its applications — remove them, then the search itself.
-  await db.delete(matches).where(eq(matches.jobId, id));
-  const [deleted] = await db
-    .delete(jobs)
-    .where(eq(jobs.id, id))
-    .returning({ id: jobs.id });
+  try {
+    // Everything that points at the search has to go first, or the foreign keys
+    // block the delete: its applications and any user assignments.
+    const deleted = await db.transaction(async (tx) => {
+      await tx.delete(matches).where(eq(matches.jobId, id));
+      await tx.delete(jobUsers).where(eq(jobUsers.jobId, id));
+      const [row] = await tx
+        .delete(jobs)
+        .where(eq(jobs.id, id))
+        .returning({ id: jobs.id });
+      return row;
+    });
 
-  if (!deleted) {
-    return NextResponse.json({ error: "Búsqueda no encontrada" }, { status: 404 });
+    if (!deleted) {
+      return NextResponse.json(
+        { error: "Búsqueda no encontrada" },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json({ ok: true, redirectTo: "/admin/busquedas" });
+  } catch (error) {
+    console.error("Failed to delete search", id, error);
+    return NextResponse.json(
+      { error: "No se pudo eliminar la búsqueda" },
+      { status: 500 }
+    );
   }
-  return NextResponse.json({ ok: true, redirectTo: "/admin/busquedas" });
 }

@@ -10,7 +10,7 @@ import { ReadOnlyBanner } from "@/components/ui";
 import { CompanyShell } from "@/components/company/company-shell";
 import { Eyebrow, Page } from "@/components/admin/admin-ui";
 import { getCompanyForUser, listJobsForCompany } from "@/lib/company-db";
-import { formatLocation } from "@/lib/location";
+import { formatLocation, remoteLabel } from "@/lib/location";
 import { SearchesGrid, type SearchItem } from "./searches-grid";
 
 const SERIF = "var(--font-instrument-serif), serif";
@@ -48,9 +48,10 @@ export default async function EmpresaHome() {
         { city: j.city, countryCode: j.countryCode, location: j.location },
         locale
       ) || "";
-    const meta = [j.industry, j.remote ? t.empresa.remote : loc]
-      .filter(Boolean)
-      .join(" · ");
+    const place = j.remote
+      ? remoteLabel(t.empresa.remote, j.remoteScope, t.remoteWork.scopes)
+      : loc;
+    const meta = [j.industry, place].filter(Boolean).join(" · ");
     return {
       id: j.id,
       title: j.title,

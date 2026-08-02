@@ -6,13 +6,30 @@ import { useState } from "react";
 import { ClevyMark } from "@/components/brand";
 import { LocationPicker } from "@/components/location-picker";
 import { useT } from "@/components/locale-provider";
-import { SUPPORTED_CURRENCIES } from "@/lib/location";
+import {
+  REMOTE_SCOPES,
+  SUPPORTED_CURRENCIES,
+  type RemoteScope,
+} from "@/lib/location";
 import {
   ErrorBanner,
   Field,
   SubmitButton,
   TextInput,
 } from "@/app/(auth)/form-controls";
+
+const selectStyle: React.CSSProperties = {
+  height: 44,
+  padding: "10px 14px",
+  background: "var(--bg)",
+  color: "var(--fg)",
+  border: "1px solid var(--hairline-strong)",
+  borderRadius: 4,
+  fontSize: 15,
+  fontFamily: "inherit",
+  outline: "none",
+  cursor: "pointer",
+};
 
 export function NuevaVacanteClient({ companyName }: { companyName: string }) {
   const router = useRouter();
@@ -22,6 +39,7 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
   const [countryCode, setCountryCode] = useState<string | null>(null);
   const [city, setCity] = useState<string | null>(null);
   const [remote, setRemote] = useState(false);
+  const [remoteScope, setRemoteScope] = useState<RemoteScope | "">("");
   const [salaryMin, setSalaryMin] = useState("");
   const [salaryMax, setSalaryMax] = useState("");
   const [currency, setCurrency] = useState<string>("USD");
@@ -56,6 +74,7 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
           countryCode,
           city,
           remote,
+          remoteScope: remote ? remoteScope || null : null,
           salaryMin: salaryMin ? Number(salaryMin) : null,
           salaryMax: salaryMax ? Number(salaryMax) : null,
           currency,
@@ -199,6 +218,27 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
               />
               {t.vacante.remoteLabel}
             </label>
+            {remote ? (
+              <Field label={t.remoteWork.scopeLabel}>
+                {(id) => (
+                  <select
+                    id={id}
+                    value={remoteScope}
+                    onChange={(e) =>
+                      setRemoteScope(e.target.value as RemoteScope | "")
+                    }
+                    style={selectStyle}
+                  >
+                    <option value="">{t.remoteWork.scopePlaceholder}</option>
+                    {REMOTE_SCOPES.map((s) => (
+                      <option key={s} value={s}>
+                        {t.remoteWork.scopes[s]}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </Field>
+            ) : null}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
               <Field label={t.vacante.currencyLabel}>
                 {(id) => (
@@ -206,18 +246,7 @@ export function NuevaVacanteClient({ companyName }: { companyName: string }) {
                     id={id}
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
-                    style={{
-                      height: 44,
-                      padding: "10px 14px",
-                      background: "var(--bg)",
-                      color: "var(--fg)",
-                      border: "1px solid var(--hairline-strong)",
-                      borderRadius: 4,
-                      fontSize: 15,
-                      fontFamily: "inherit",
-                      outline: "none",
-                      cursor: "pointer",
-                    }}
+                    style={selectStyle}
                   >
                     {SUPPORTED_CURRENCIES.map((c) => (
                       <option key={c} value={c}>

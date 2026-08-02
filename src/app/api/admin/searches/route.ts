@@ -8,6 +8,7 @@ import {
   jobs,
 } from "@/db/schema";
 import { getCurrentSession } from "@/lib/auth";
+import { isRemoteScope } from "@/lib/location";
 
 const STATUSES = new Set<string>(jobStatusEnum.enumValues);
 const VISIBILITIES = new Set<string>(jobVisibilityEnum.enumValues);
@@ -63,6 +64,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Empresa inválida" }, { status: 400 });
   }
 
+  const remote = raw.remote === true;
   const [created] = await db
     .insert(jobs)
     .values({
@@ -72,7 +74,9 @@ export async function POST(request: Request) {
       visibility: visibility as (typeof jobVisibilityEnum.enumValues)[number],
       description: optionalString(raw.description),
       location: optionalString(raw.location),
-      remote: raw.remote === true,
+      remote,
+      // A scope only makes sense for remote searches.
+      remoteScope: remote && isRemoteScope(raw.remoteScope) ? raw.remoteScope : null,
       createdById: session.userId,
     })
     .returning({ id: jobs.id });

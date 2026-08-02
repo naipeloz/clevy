@@ -8,6 +8,7 @@ import {
   PageTitle,
 } from "@/components/admin/admin-ui";
 import { listAdminJobs, type AdminJobRow } from "@/lib/admin-db";
+import { SearchRowActions } from "./search-row-actions";
 
 const SERIF = "var(--font-instrument-serif), serif";
 
@@ -36,9 +37,29 @@ export default async function AdminSearchesPage() {
       key: "title",
       label: s.thSearch,
       w: "1.6fr",
-      render: (r) => (
-        <span style={{ fontFamily: SERIF, fontSize: 17 }}>{r.title}</span>
-      ),
+      // Only public + open searches have a live posting to open.
+      render: (r) =>
+        r.visibility === "public" && r.status === "open" ? (
+          <a
+            href={`/busquedas/${r.id}`}
+            target="_blank"
+            rel="noreferrer noopener"
+            title={s.viewPublished}
+            style={{
+              fontFamily: SERIF,
+              fontSize: 17,
+              color: "var(--fg)",
+              textDecoration: "underline",
+              textUnderlineOffset: 3,
+            }}
+          >
+            {r.title} <span aria-hidden>↗</span>
+          </a>
+        ) : (
+          <span style={{ fontFamily: SERIF, fontSize: 17 }} title={s.notPublished}>
+            {r.title}
+          </span>
+        ),
     },
     {
       key: "company",
@@ -81,21 +102,9 @@ export default async function AdminSearchesPage() {
     {
       key: "action",
       label: "",
-      w: "80px",
+      w: "150px",
       align: "right",
-      render: (r) => (
-        <Link
-          href={`/admin/busquedas/${r.id}`}
-          style={{
-            fontSize: 13,
-            color: "var(--fg)",
-            textDecoration: "underline",
-            textUnderlineOffset: 3,
-          }}
-        >
-          {s.view}
-        </Link>
-      ),
+      render: (r) => <SearchRowActions id={r.id} title={r.title} />,
     },
   ];
 

@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { jobs, users } from "@/db/schema";
 import { getCurrentSession, isManager } from "@/lib/auth";
-import { isCurrency } from "@/lib/location";
+import { isCurrency, isRemoteScope } from "@/lib/location";
 
 const VALID_STATUS = new Set(["draft", "open", "paused", "closed"]);
 
@@ -69,6 +69,7 @@ export async function POST(request: Request) {
         .slice(0, 30)
     : [];
 
+  const remote = raw.remote === true;
   const [created] = await db
     .insert(jobs)
     .values({
@@ -79,7 +80,9 @@ export async function POST(request: Request) {
       location: optionalString(raw.location),
       countryCode: countryCode ? countryCode.toUpperCase().slice(0, 2) : null,
       city: optionalString(raw.city),
-      remote: raw.remote === true,
+      remote,
+      // A scope only makes sense for remote vacancies.
+      remoteScope: remote && isRemoteScope(raw.remoteScope) ? raw.remoteScope : null,
       salaryMin: optionalInt(raw.salaryMin),
       salaryMax: optionalInt(raw.salaryMax),
       currency,

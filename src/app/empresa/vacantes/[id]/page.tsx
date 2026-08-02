@@ -12,9 +12,10 @@ import {
   getOrgCultureAxes,
   listApplicantsForJob,
 } from "@/lib/company-db";
-import { formatLocation, formatSalary } from "@/lib/location";
+import { formatLocation, formatSalary, remoteLabel } from "@/lib/location";
 import { fmt } from "@/lib/fmt";
 import { JobStatusControl } from "./status-control";
+import { ShareLink } from "./share-link";
 
 type Params = Promise<{ id: string }>;
 
@@ -83,7 +84,15 @@ export default async function VacanteDetailPage({
                 <Tag tone={job.status === "open" ? "accent" : "default"}>
                   {t.statuses[job.status]}
                 </Tag>
-                {job.remote ? <Tag>{t.empresa.remote}</Tag> : null}
+                {job.remote ? (
+                  <Tag>
+                    {remoteLabel(
+                      t.empresa.remote,
+                      job.remoteScope,
+                      t.remoteWork.scopes
+                    )}
+                  </Tag>
+                ) : null}
               </div>
               <h1
                 style={{
@@ -113,6 +122,12 @@ export default async function VacanteDetailPage({
               <JobStatusControl jobId={job.id} status={job.status} />
             ) : null}
           </div>
+
+          <ShareLink
+            jobId={job.id}
+            status={job.status}
+            visibility={job.visibility}
+          />
 
           {job.description ? (
             <RichText

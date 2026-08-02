@@ -5,7 +5,7 @@ import { Avatar, Tag } from "@/components/ui";
 import { PublicHeader } from "@/components/public-header";
 import { RichText } from "@/components/rich-text";
 import { getPublicJob } from "@/lib/public-db";
-import { formatLocation } from "@/lib/location";
+import { formatLocation, remoteLabel } from "@/lib/location";
 import { ApplyForm } from "./apply-form";
 
 const SERIF = "var(--font-instrument-serif), serif";
@@ -27,7 +27,8 @@ export default async function PublicJobDetailPage({
       { city: job.city, countryCode: job.countryCode, location: job.location },
       locale
     ) || "";
-  const place = job.remote ? p.remote : loc;
+  const remote = remoteLabel(p.remote, job.remoteScope, t.remoteWork.scopes);
+  const place = job.remote ? remote : loc;
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
@@ -65,7 +66,7 @@ export default async function PublicJobDetailPage({
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {job.industry ? <Tag>{job.industry}</Tag> : null}
-            {job.remote ? <Tag>{p.remote}</Tag> : null}
+            {job.remote ? <Tag>{remote}</Tag> : null}
           </div>
 
           <div
